@@ -1,0 +1,9 @@
+svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.shiny-gateplot {
+    position: relative;
+}

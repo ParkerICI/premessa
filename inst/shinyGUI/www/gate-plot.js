@@ -31,13 +31,23 @@ $.extend(gatePlot, {
     renderValue: function(el, data) {
         data = convertDataForD3(data);
         console.log(data);
+        //top; left; bottom; right
+        var margins = [30, 30, 30, 30];
+        var width = 400 - margins[1] - margins[3];
+        var height = 300 - margins[0] - margins[2];
 
-        var canvas = d3.select(el).select("canvas")
-        var width = 800;
-        var height = 600;
+        var canvas = d3.select(el)
+                .select("canvas")
+                .attr("width", width + margins[1] + margins[3])
+                .attr("height", height + margins[0] + margins[2])
+                .style("padding", margins.join("px ") + "px");
 
-        canvas.attr("width", width)
-            .attr("height", height);
+        var svg = d3.select(el)
+            .append("svg")
+            .attr("width", width + margins[1] + margins[3])
+            .attr("height", height + margins[0] + margins[2])
+            .append("svg:g")
+            .attr("transform", "translate(" + margins[3] + "," + margins[0] + ")");
         
         var ctx = canvas.node().getContext('2d');
         
@@ -46,11 +56,24 @@ $.extend(gatePlot, {
             .domain(d3.extent(data, function(d) { return(d.x); }));
         
         var yScale = d3.scaleLinear()
-            .range([0, height])
+            .range([height, 0])
             .domain(d3.extent(data, function(d) { return(d.y); }));
 
+        var xAxisG = svg.append("g")
+                    .attr("class", "xAxis")
+                    //.attr("transform", "translate(" + margins[1] + ", " + (margins[0] + height) + ")");
+                    .attr("transform", "translate(0, "  + height + ")");
+        var yAxisG = svg.append("g")
+                    .attr("class", "yAxis");
+                    //.attr("transform", "translate(" + margins[1] + ", " + (margins[0]) + ")");
+
+        var xAxis = d3.axisBottom(xScale);
+        var yAxis = d3.axisLeft(yScale);
+        xAxisG.call(xAxis);
+        yAxisG.call(yAxis);
+
         data.forEach(function(d, i, a) {
-            paintPoint(ctx, d, xScale, yScale);
+            paintPoint(ctx, d, xScale, yScale, 2);
         });
 
     }
