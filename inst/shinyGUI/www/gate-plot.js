@@ -19,12 +19,11 @@ var paintPoint = function(ctx, d, xScale, yScale, r) {
 };
 
 
+
 var gatePlot = new Shiny.OutputBinding();
 $.extend(gatePlot, {
     find: function(scope) {
-        console.log(scope);
         var ret = $(scope).find('.shiny-gateplot');
-        console.log(ret);
         return $(scope).find('.shiny-gateplot');
     },
 
@@ -61,14 +60,27 @@ $.extend(gatePlot, {
 
         var xAxisG = svg.append("g")
                     .attr("class", "xAxis")
-                    //.attr("transform", "translate(" + margins[1] + ", " + (margins[0] + height) + ")");
                     .attr("transform", "translate(0, "  + height + ")");
         var yAxisG = svg.append("g")
                     .attr("class", "yAxis");
-                    //.attr("transform", "translate(" + margins[1] + ", " + (margins[0]) + ")");
 
         var xAxis = d3.axisBottom(xScale);
         var yAxis = d3.axisLeft(yScale);
+
+        var brushed = function() {
+            var sel = d3.event.selection;
+            var xLim = [sel[0][0], sel[1][0]].map(xScale.invert);
+            //This is necessary because the range of the y scale is inverted
+            var yLim = [sel[1][1], sel[0][1]].map(yScale.invert);
+
+            console.log(xLim);
+            console.log(yLim);
+        }
+
+        var brush = svg.append("g")
+            .attr("class", "brush")
+            .call(d3.brush().on("end", brushed));
+
         xAxisG.call(xAxis);
         yAxisG.call(yAxis);
 

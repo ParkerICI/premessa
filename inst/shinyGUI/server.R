@@ -35,15 +35,16 @@ shinyServer(function(input, output, session) {
     library(plotly)
     library(flowCore)
 
-    fcs <- read.FCS(file.path(working.directory, "20120222_cells_found.fcs"))
-    m <- exprs(fcs)
-    m <- asinh(m / 5)
-    m <- m[1:100000,]
+    #fcs <- read.FCS(file.path(working.directory, "20120222_cells_found.fcs"))
+    #m <- exprs(fcs)
+    #m <- asinh(m / 5)
+    #m <- m[1:100000,]
 
 
 
     output$plot1 <- reactive({
-        ret <- list(x = m[, 3], y = m[,22])
+        #ret <- list(x = m[, 3], y = m[,22])
+        ret <- list(x = 1:10, y = 1:10)
         return(ret)
     })
 
