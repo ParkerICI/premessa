@@ -1,5 +1,3 @@
-console.log("GINOPINO");
-
 var convertDataForD3 = function(obj) {
     var res = [];
     var len = obj[Object.keys(obj)[0]].length;
@@ -24,16 +22,15 @@ var gatePlot = new Shiny.OutputBinding();
 $.extend(gatePlot, {
     find: function(scope) {
         var ret = $(scope).find('.shiny-gateplot');
-        return $(scope).find('.shiny-gateplot');
+        return(ret);
     },
 
     renderValue: function(el, data) {
-        data = convertDataForD3(data);
-        console.log(data);
+        var plotData = convertDataForD3({x: data.x, y: data.y});
         //top; left; bottom; right
-        var margins = [30, 30, 30, 30];
-        var width = 400 - margins[1] - margins[3];
-        var height = 300 - margins[0] - margins[2];
+        var margins = [15, 15, 15, 15];
+        var width = 300 - margins[1] - margins[3];
+        var height = 250 - margins[0] - margins[2];
 
         var canvas = d3.select(el)
                 .select("canvas")
@@ -52,11 +49,11 @@ $.extend(gatePlot, {
         
         var xScale = d3.scaleLinear()
             .range([0, width])
-            .domain(d3.extent(data, function(d) { return(d.x); }));
+            .domain(d3.extent(plotData, function(d) { return(d.x); }));
         
         var yScale = d3.scaleLinear()
             .range([height, 0])
-            .domain(d3.extent(data, function(d) { return(d.y); }));
+            .domain(d3.extent(plotData, function(d) { return(d.y); }));
 
         var xAxisG = svg.append("g")
                     .attr("class", "xAxis")
@@ -72,9 +69,17 @@ $.extend(gatePlot, {
             var xLim = [sel[0][0], sel[1][0]].map(xScale.invert);
             //This is necessary because the range of the y scale is inverted
             var yLim = [sel[1][1], sel[0][1]].map(yScale.invert);
-
+            console.log(data);
             console.log(xLim);
             console.log(yLim);
+            var shinyData = {
+                xLim: xLim,
+                yLim: yLim,
+                xAxisName: data.xAxisName,
+                yAxisName: data.yAxisName,
+                file: data.file
+            }
+            Shiny.onInputChange("normalizerui_gate_selected", shinyData);
         }
 
         var brush = svg.append("g")
@@ -84,7 +89,7 @@ $.extend(gatePlot, {
         xAxisG.call(xAxis);
         yAxisG.call(yAxis);
 
-        data.forEach(function(d, i, a) {
+        plotData.forEach(function(d, i, a) {
             paintPoint(ctx, d, xScale, yScale, 2);
         });
 

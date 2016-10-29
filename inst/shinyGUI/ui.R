@@ -1,5 +1,21 @@
 shinyUI(
     navbarPage("cytofNormalizeR",
-        tabPanel("Normalize data", uiOutput("normalizerUI"))
+        tabPanel("Normalize data",
+            tags$head(tags$script(src = "gate-plot.js")),
+            tags$head(tags$script(src = "d3.min.js")),
+            singleton(tags$head(tags$link(rel = 'stylesheet', type = 'text/css', href = 'gate-plot.css'))),
+            fluidPage(
+                fluidRow(
+                    uiOutput("normalizerUI")
+                ),
+                fluidRow(
+                    uiOutput("normalizerUI_plot_outputs")
+
+                )
+            )
+        )
     )
 )
+
+
+
