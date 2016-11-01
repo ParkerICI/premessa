@@ -12,11 +12,36 @@ var convertDataForD3 = function(obj) {
 
 var paintPoint = function(ctx, d, xScale, yScale, r) {
     ctx.beginPath();
+    ctx.fillStyle = d.color;
     ctx.arc(xScale(d.x), yScale(d.y), r, 0, 2 * Math.PI);
     ctx.fill();
 };
 
+  var doPlot = function(ctx, plotData, xScale, yScale) {
+    var offScreen = document.createElement('canvas');
+    var r = 2;
+    var d = r * 2;
+    colors = ['black', 'red'];
 
+    offScreen.width = d * colors.length;
+    offScreen.height = d;
+
+    var offCtx = offScreen.getContext('2d');
+
+    colors.forEach(function(c, i) {
+        offCtx.fillStyle = c;
+        offCtx.beginPath();
+        offCtx.arc((i * d) + r, r, r, 0, 2 * Math.PI);
+        offCtx.closePath();
+        offCtx.fill();
+        
+    });
+
+    plotData.forEach(function(datum, i, a) {
+        ctx.drawImage(offScreen, datum.color * d, 0, d, d, xScale(datum.x) - r, yScale(datum.y) - r, d, d);
+    });
+
+}
 
 var gatePlot = new Shiny.OutputBinding();
 $.extend(gatePlot, {
@@ -27,7 +52,8 @@ $.extend(gatePlot, {
 
     renderValue: function(el, data) {
         console.log(data);
-        var plotData = convertDataForD3({x: data.x, y: data.y});
+        data.color = data.color.map(function(d) { return(d == "black" ? 0 : 1); });
+        var plotData = convertDataForD3({x: data.x, y: data.y, color: data.color});
         //top; right; bottom; left
         var margins = [20, 20, 20, 20];
         var width = 300 - margins[1] - margins[3];
@@ -101,21 +127,12 @@ $.extend(gatePlot, {
                             [xScale(gates.x[1]), yScale(gates.y[0])]]);
         brush.on("end", brushed);
 
-    
-        //brush.move(brushG, [[100, 100], [250, 300]]);
-
-        //brushG.call(d3.brush().move([[100, 100], [250, 300]]));
-    
-
-        //This line works
-        //d3.selectAll(".brush").call(d3.brush().move, [[100, 100], [250, 300]])
-
         xAxisG.call(xAxis);
         yAxisG.call(yAxis);
 
-        plotData.forEach(function(d, i, a) {
-            paintPoint(ctx, d, xScale, yScale, 2);
-        });
+
+      
+        doPlot(ctx, plotData, xScale, yScale);
 
     }
 
