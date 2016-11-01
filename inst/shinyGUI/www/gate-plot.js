@@ -26,9 +26,10 @@ $.extend(gatePlot, {
     },
 
     renderValue: function(el, data) {
+        console.log(data);
         var plotData = convertDataForD3({x: data.x, y: data.y});
-        //top; left; bottom; right
-        var margins = [15, 15, 15, 15];
+        //top; right; bottom; left
+        var margins = [20, 20, 20, 20];
         var width = 300 - margins[1] - margins[3];
         var height = 250 - margins[0] - margins[2];
 
@@ -38,6 +39,12 @@ $.extend(gatePlot, {
                 .attr("height", height + margins[0] + margins[2])
                 .style("padding", margins.join("px ") + "px");
 
+        var ctx = canvas.node().getContext('2d');
+        
+        //Clear existing graph
+        d3.select(el).select("svg").remove();
+        ctx.clearRect(0, 0, canvas.node().width, canvas.node().height);
+
         var svg = d3.select(el)
             .append("svg")
             .attr("width", width + margins[1] + margins[3])
@@ -45,15 +52,14 @@ $.extend(gatePlot, {
             .append("svg:g")
             .attr("transform", "translate(" + margins[3] + "," + margins[0] + ")");
         
-        var ctx = canvas.node().getContext('2d');
         
         var xScale = d3.scaleLinear()
             .range([0, width])
-            .domain(d3.extent(plotData, function(d) { return(d.x); }));
+            .domain(d3.extent(plotData, function(d) { return(d.x); })).nice();
         
         var yScale = d3.scaleLinear()
             .range([height, 0])
-            .domain(d3.extent(plotData, function(d) { return(d.y); }));
+            .domain(d3.extent(plotData, function(d) { return(d.y); })).nice();
 
         var xAxisG = svg.append("g")
                     .attr("class", "xAxis")
@@ -69,9 +75,7 @@ $.extend(gatePlot, {
             var xLim = [sel[0][0], sel[1][0]].map(xScale.invert);
             //This is necessary because the range of the y scale is inverted
             var yLim = [sel[1][1], sel[0][1]].map(yScale.invert);
-            console.log(data);
-            console.log(xLim);
-            console.log(yLim);
+            
             var shinyData = {
                 xLim: xLim,
                 yLim: yLim,
@@ -79,12 +83,32 @@ $.extend(gatePlot, {
                 yAxisName: data.yAxisName,
                 file: data.file
             }
+
+            console.log(shinyData);
             Shiny.onInputChange("normalizerui_gate_selected", shinyData);
         }
 
-        var brush = svg.append("g")
+        var brush = d3.brush();
+
+
+
+        var brushG = svg.append("g")
             .attr("class", "brush")
-            .call(d3.brush().on("end", brushed));
+            .call(brush);
+        
+        var gates = data.channelGates;
+        brush.move(brushG, [[xScale(gates.x[0]), yScale(gates.y[1])], 
+                            [xScale(gates.x[1]), yScale(gates.y[0])]]);
+        brush.on("end", brushed);
+
+    
+        //brush.move(brushG, [[100, 100], [250, 300]]);
+
+        //brushG.call(d3.brush().move([[100, 100], [250, 300]]));
+    
+
+        //This line works
+        //d3.selectAll(".brush").call(d3.brush().move, [[100, 100], [250, 300]])
 
         xAxisG.call(xAxis);
         yAxisG.call(yAxis);
