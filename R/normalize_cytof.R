@@ -43,4 +43,36 @@ correct_channels <- function(m, beads.data, baseline, beads.col.names, time.col.
     return(m * int.slopes$y)
 }
 
+identify_beads <- function(m, gates, beads.cols.names, dna.col) {
+    sel <- lapply(beads.cols.names, function(n) {
+        g <- gates[[n]]
+        ret <- (m[,n] > g$x[1]) & (m[,n] < g$x[2]) & (m[,dna.col] > g$y[1]) & (m[,dna.col] < g$y[2])
 
+    })
+
+    return(Reduce("&", sel))
+}
+
+load_all_beads <- function(wd, beads.gates, beads.type) {
+    lapply(names(beads.gates), function(f.name) {
+        fcs <- flowCore::read.FCS(f.name)
+        beads.cols <-  beads.cols <- find_bead_channels(fcs, beads.type)
+        dna.col <- find_dna_channel(fcs)
+        beads.cols.names <- get_parameter_name(fcs, beads.cols)
+
+        m <- exprs(fcs)
+        m <- asinh(m / 5)
+
+        sel <- identify_beads(m, beads.gates, beads.col.names, dna.col)
+        return(m[sel,])
+    })
+
+    browser()
+}
+
+
+normalize_folder <- function(wd, beads.gates, beads.type) {
+    beads.data <- load_all_beads(wd, beads.gates, beads.type)
+
+
+}

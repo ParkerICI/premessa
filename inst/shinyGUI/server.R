@@ -36,13 +36,18 @@ shinyServer(function(input, output, session) {
     output$normalizerUI <- render_normalizer_ui(working.directory, input, output, session)
     output$normalizerUI_plot_outputs <- generate_plot_outputs(5)
 
+    beads.gates <- reactiveValues()
 
-    #fcs <- read.FCS(file.path(working.directory, "20120222_cells_found.fcs"))
-    #m <- exprs(fcs)
-    #m <- asinh(m / 5)
-    #m <- m[1:100000,]
 
-    beads.gates <- list()
+    get_beads_gates <- reactive({
+            if(!input$normalizerui_selected_fcs %in% names(beads.gates)) {
+                print("Initializing gates")
+                fcs <- get_fcs()
+                beads.gates[[input$normalizerui_selected_fcs]] <<- cytofNormalizeR:::get_initial_beads_gates(fcs)
+            }
+            beads.gates[[input$normalizerui_selected_fcs]]
+    })
+
 
     get_fcs <- reactive({
         ret <- NULL
@@ -64,16 +69,20 @@ shinyServer(function(input, output, session) {
 
     })
 
-    do_plot_outputs <- function(sel.beads) {reactive({
+
+
+    do_plot_outputs <- function(sel.beads = NULL) {
+        fcs <- get_fcs()
         beads.type <- unlist(regmatches(input$normalizerui_beads_type, regexec("Fluidigm|Beta", input$normalizerui_beads_type)))
         beads.cols <- cytofNormalizeR:::find_bead_channels(fcs, beads.type)
         dna.col <- cytofNormalizeR:::find_dna_channel(fcs)
 
-        if(!input$normalizerui_selected_fcs %in% names(beads.gates))
-            beads.gates[[input$normalizerui_selected_fcs]] <<- cytofNormalizeR:::get_initial_beads_gates(fcs, beads.cols)
-
+        gates <- isolate({get_beads_gates()})
 
         m <- get_exprs()
+        colors <- rep("black", nrow(m))
+        if(!is.null(sel.beads))
+            colors[sel.beads] <- "red"
 
         #Needs to be in lapply to work
         #see https://github.com/rstudio/shiny/issues/532
@@ -85,47 +94,20 @@ shinyServer(function(input, output, session) {
                 list(
                     x = m[, beads.cols[i]],
                     y = m[, dna.col],
-                    color = rep("black", nrow(m)),
+                    color = colors,
                     xAxisName = xAxisName,
                     yAxisName = yAxisName,
                     file = input$normalizerui_selected_fcs,
-                    channelGates = beads.gates[[input$normalizerui_selected_fcs]][[xAxisName]]
+                    channelGates = gates[[xAxisName]]
                 )
             })
         })
-    })}
+    }
 
     observe({
         fcs <- get_fcs()
         if(!is.null(fcs)) {
-            beads.type <- unlist(regmatches(input$normalizerui_beads_type, regexec("Fluidigm|Beta", input$normalizerui_beads_type)))
-            beads.cols <- cytofNormalizeR:::find_bead_channels(fcs, beads.type)
-            dna.col <- cytofNormalizeR:::find_dna_channel(fcs)
-
-            if(!input$normalizerui_selected_fcs %in% names(beads.gates))
-                beads.gates[[input$normalizerui_selected_fcs]] <<- cytofNormalizeR:::get_initial_beads_gates(fcs, beads.cols)
-
-
-            m <- get_exprs()
-
-            #Needs to be in lapply to work
-            #see https://github.com/rstudio/shiny/issues/532
-            lapply(1:length(beads.cols), function(i) {
-                xAxisName <- cytofNormalizeR:::get_parameter_name(fcs, beads.cols[i])
-                yAxisName <- cytofNormalizeR:::get_parameter_name(fcs, dna.col)
-
-                output[[paste("normalizerui_gateplot", i, sep ="")]] <- reactive({
-                    list(
-                        x = m[, beads.cols[i]],
-                        y = m[, dna.col],
-                        color = rep("black", nrow(m)),
-                        xAxisName = xAxisName,
-                        yAxisName = yAxisName,
-                        file = input$normalizerui_selected_fcs,
-                        channelGates = beads.gates[[input$normalizerui_selected_fcs]][[xAxisName]]
-                    )
-                })
-            })
+            do_plot_outputs()
         }
 
     })
@@ -133,41 +115,18 @@ shinyServer(function(input, output, session) {
 
     observeEvent(input$normalizerui_identify_beads, {
         isolate({
+            print("Identifying")
             fcs <- get_fcs()
             m <- get_exprs()
             dna.col <- cytofNormalizeR:::find_dna_channel(fcs)
-            sel <- cytofNormalizeR:::identify_beads(m, beads.gates[[input$normalizerui_selected_fcs]], dna.col)
 
-
+            gates <- get_beads_gates()
             beads.type <- unlist(regmatches(input$normalizerui_beads_type, regexec("Fluidigm|Beta", input$normalizerui_beads_type)))
             beads.cols <- cytofNormalizeR:::find_bead_channels(fcs, beads.type)
-            dna.col <- cytofNormalizeR:::find_dna_channel(fcs)
+            beads.cols.names <- cytofNormalizeR:::get_parameter_name(fcs, beads.cols)
 
-
-
-            colors <- rep("black", nrow(m))
-            colors[sel] <- "red"
-
-            #Needs to be in lapply to work
-            #see https://github.com/rstudio/shiny/issues/532
-            lapply(1:length(beads.cols), function(i) {
-                xAxisName <- cytofNormalizeR:::get_parameter_name(fcs, beads.cols[i])
-                yAxisName <- cytofNormalizeR:::get_parameter_name(fcs, dna.col)
-
-                output[[paste("normalizerui_gateplot", i, sep ="")]] <- reactive({
-                    list(
-                        x = 1:10, #m[, beads.cols[i]],
-                        y = 1:10, #m[, dna.col],
-                        color = rep("black", 10), #colors,
-                        xAxisName = xAxisName,
-                        yAxisName = yAxisName,
-                        file = input$normalizerui_selected_fcs,
-                        channelGates = beads.gates[[input$normalizerui_selected_fcs]][[xAxisName]]
-                    )
-                })
-            })
-
-
+            sel <- cytofNormalizeR:::identify_beads(m, gates, beads.cols.names, dna.col)
+            do_plot_outputs(sel)
         })
 
     })

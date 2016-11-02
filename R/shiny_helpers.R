@@ -16,28 +16,21 @@ get_parameter_name <- function(fcs, i) {
     return(as.vector(unname(flowCore::parameters(fcs)$name[i])))
 }
 
-get_initial_beads_gates <- function(fcs, beads.cols) {
+get_initial_beads_gates <- function(fcs) {
+    beta.beads <- find_bead_channels(fcs, "Beta")
+    fluidigm.beads <- find_bead_channels(fcs, "Fluidigm")
+    beads.cols <- union(beta.beads, fluidigm.beads)
+
     ret <- list()
 
     col.names <- get_parameter_name(fcs, beads.cols)
 
     for(x in col.names)
-        #ret <- c(ret, setNames(list(list(x = c(0, 3), y = c(0, 5))), x))
-        ret[[x]] <- list(x = c(0, 3), y = c(0, 5))
+        ret[[x]] <- list(x = c(2, 5), y = c(-1, 2))
 
     return(ret)
 }
 
-
-identify_beads <- function(m, gates, dna.col) {
-    sel <- lapply(names(gates), function(n) {
-        g <- gates[[n]]
-        ret <- (m[,n] > g$x[1]) & (m[,n] < g$x[2]) & (m[,dna.col] > g$y[1]) & (m[,dna.col] < g$y[2])
-
-    })
-
-    return(Reduce("&", sel))
-}
 
 
 
