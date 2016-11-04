@@ -14,6 +14,7 @@ render_normalizer_ui <- function(working.directory, ...){renderUI({
                 selectizeInput("normalizerui_selected_fcs", "Select FCS file",
                             choices = c("", list.files(working.directory, pattern = "*.fcs$")), multiple = FALSE, width = "100%"),
                 actionButton("normalizerui_identify_beads", "Identify beads"),
+                actionButton("normalizerui_normalize_files", "Normalize"),
                 verbatimTextOutput("dialog")
             )
         )
@@ -39,7 +40,7 @@ shinyServer(function(input, output, session) {
     beads.gates <- reactiveValues()
 
 
-    get_beads_gates <- reactive({
+    get_beads_gates_for_current_file <- reactive({
             if(!input$normalizerui_selected_fcs %in% names(beads.gates)) {
                 print("Initializing gates")
                 fcs <- get_fcs()
@@ -69,15 +70,19 @@ shinyServer(function(input, output, session) {
 
     })
 
+    get_beads_type <- reactive({
+        unlist(regmatches(input$normalizerui_beads_type, regexec("Fluidigm|Beta", input$normalizerui_beads_type)))
+    })
+
 
 
     do_plot_outputs <- function(sel.beads = NULL) {
         fcs <- get_fcs()
-        beads.type <- unlist(regmatches(input$normalizerui_beads_type, regexec("Fluidigm|Beta", input$normalizerui_beads_type)))
+        beads.type <- get_beads_type()
         beads.cols <- cytofNormalizeR:::find_bead_channels(fcs, beads.type)
         dna.col <- cytofNormalizeR:::find_dna_channel(fcs)
 
-        gates <- isolate({get_beads_gates()})
+        gates <- isolate({get_beads_gates_for_current_file()})
 
         m <- get_exprs()
         colors <- rep("black", nrow(m))
@@ -112,6 +117,11 @@ shinyServer(function(input, output, session) {
 
     })
 
+    observeEvent(input$normalizerui_normalize_files, {
+        beads.type <- get_beads_type()
+        cytofNormalizeR::normalize_folder(working.directory, "normed", beads.gates, beads.type)
+
+    })
 
     observeEvent(input$normalizerui_identify_beads, {
         isolate({
@@ -120,8 +130,8 @@ shinyServer(function(input, output, session) {
             m <- get_exprs()
             dna.col <- cytofNormalizeR:::find_dna_channel(fcs)
 
-            gates <- get_beads_gates()
-            beads.type <- unlist(regmatches(input$normalizerui_beads_type, regexec("Fluidigm|Beta", input$normalizerui_beads_type)))
+            gates <- get_beads_gates_for_current_file()
+            beads.type <- get_beads_type()
             beads.cols <- cytofNormalizeR:::find_bead_channels(fcs, beads.type)
             beads.cols.names <- cytofNormalizeR:::get_parameter_name(fcs, beads.cols)
 
@@ -134,6 +144,7 @@ shinyServer(function(input, output, session) {
     observe({
         if(!is.null(input$normalizerui_gate_selected)) {
             isolate({
+                #Change this to use get_beads_gates_for_current_file ??
                 gate.data <- input$normalizerui_gate_selected
                 temp <- beads.gates[[input$normalizerui_selected_fcs]][[gate.data$xAxisName]]
 
