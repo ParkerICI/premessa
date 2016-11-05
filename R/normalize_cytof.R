@@ -122,8 +122,9 @@ compute_bead_slopes <- function(beads.data, baseline, beads.col.names) {
 #' @return Returns a list with the following components
 #' \itemize{
 #'  \item \code{m.normed} The normalized data matrix
-#'  \item \code{smoothed.beads} A matrix with the smoothed beads data
-#'  \item \code{beads.slopes} A matrix with the calculated beadlsopes with \code{nrow(beads.slopes) = nrow(beads.data)} and
+#'  \item \code{beads.smoothed} A matrix containing the smoothed beads data
+#'  \item \code{beads.normed} A matrix containing the normalized beads data
+#'  \item \code{beads.slopes} A matrix containing the calculated beadlsopes with \code{nrow(beads.slopes) = nrow(beads.data)} and
 #'  two columns: \code{time} and \code{slope}
 #' }
 #'
@@ -144,8 +145,11 @@ correct_data_channels <- function(m, beads.data, baseline, beads.col.names, time
 
     m[, include.channels] <- m[, include.channels] * int.slopes$y
     beads.slopes <- cbind(time = tt, slope = slopes)
+    beads.normed <- beads.data
+    beads.normed[, beads.col.names] <- beads.normed[, beads.col.names] * beads.slopes[, "slope"]
 
-    return(list(m.normed = m, smoothed.beads = sm.beads, beads.slopes = beads.slopes))
+    return(list(m.normed = m, beads.smoothed = sm.beads,
+                beads.normed = beads.normed, beads.slopes = beads.slopes))
 }
 
 
@@ -198,6 +202,16 @@ calculate_baseline <- function(wd, beads.gates, beads.type) {
 }
 
 
+plot_beads_medians <- function(tab) {
+    browser()
+    m <- reshape::melt(tab, id.vars = "sample")
+
+    (p <- ggplot2::ggplot(ggplot2::aes(x = sample, y = value, color = variable, group = variable), data = m)
+        + ggplot2::geom_line()
+    )
+}
+
+
 
 #' Normalize a folder of FCS files
 #'
@@ -237,6 +251,21 @@ normalize_folder <- function(wd, output.dir.name, beads.gates, beads.type) {
 
         norm.res <- correct_data_channels(m, beads.data, baseline, beads.cols.names)
         write_FCS(norm.res$m.normed, file.path(out.dir.path, f.name), fcs)
-        #Return the median of smoothed beads
+        beads.normed <- apply(norm.res$beads.normed[, beads.cols], 2, median)
+        beads.smoothed <- apply(norm.res$beads.smoothed[, beads.cols], 2, median)
+
+        return(list(beads.normed = beads.normed, beads.smoothed = beads.smoothed))
     })
+
+    beads.medians <- t(sapply(ll, function(x) {return(x[["beads.normed"]])}))
+    beads.medians <- rbind(beads.medians,
+            t(sapply(ll, function(x) {return(x[["beads.smoothed"]])})))
+
+    beads.medians <- data.frame(beads.medians, row.names = NULL)
+    browser()
+
+    beads.medians$sample <- rep(names(beads.gates), 2)
+    beads.medians$type <- c(rep("After", length(beads.gates)), rep("Before", length(beads.gates)))
+    plot_beads_medians(beads.medians)
+
 }

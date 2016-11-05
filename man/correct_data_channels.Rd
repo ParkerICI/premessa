@@ -24,8 +24,9 @@ for normalization}
 Returns a list with the following components
 \itemize{
  \item \code{m.normed} The normalized data matrix
- \item \code{smoothed.beads} A matrix with the smoothed beads data
- \item \code{beads.slopes} A matrix with the calculated beadlsopes with \code{nrow(beads.slopes) = nrow(beads.data)} and
+ \item \code{beads.smoothed} A matrix containing the smoothed beads data
+ \item \code{beads.normed} A matrix containing the normalized beads data
+ \item \code{beads.slopes} A matrix containing the calculated beadlsopes with \code{nrow(beads.slopes) = nrow(beads.data)} and
  two columns: \code{time} and \code{slope}
 }
 }

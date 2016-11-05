@@ -4,7 +4,7 @@ Title: R implementation of bead normalization for CyTOF data
 Version: 0.1.0
 Author: "Pier Federico Gherardini <pfgherardini@parkerici.org> [aut, cre]"
 Description: Ths package enables the normalization of CyTOF data that has been acquired with standard normalization beads
-Imports: shiny, flowCore
+Imports: shiny, flowCore, reshape, ggplot2
 License: Apache 2.0
 LazyData: TRUE
 RoxygenNote: 5.0.1
