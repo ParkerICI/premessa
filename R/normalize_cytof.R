@@ -202,13 +202,17 @@ calculate_baseline <- function(wd, beads.gates, beads.type) {
 }
 
 
-plot_beads_medians <- function(tab) {
-    browser()
-    m <- reshape::melt(tab, id.vars = "sample")
+plot_beads_medians <- function(tab, out.name) {
 
-    (p <- ggplot2::ggplot(ggplot2::aes(x = sample, y = value, color = variable, group = variable), data = m)
+    m <- reshape::melt(tab, id.vars = c("sample", "type"))
+
+    (p <- ggplot2::ggplot(ggplot2::aes(x = sample, y = asinh(value / 5), color = variable, group = variable), data = m)
+        + ggplot2::facet_wrap(~type, ncol = 1)
         + ggplot2::geom_line()
+        + ggplot2::theme(axis.text.x = element_text(angle = 45, hjust = 1))
+        + ggplot2::scale_y_continuous("Intensity (asinh transformed)")
     )
+    ggsave(out.name, plot = p, width = 11, height = 8.5, units = "in")
 }
 
 
@@ -262,10 +266,10 @@ normalize_folder <- function(wd, output.dir.name, beads.gates, beads.type) {
             t(sapply(ll, function(x) {return(x[["beads.smoothed"]])})))
 
     beads.medians <- data.frame(beads.medians, row.names = NULL)
-    browser()
 
     beads.medians$sample <- rep(names(beads.gates), 2)
-    beads.medians$type <- c(rep("After", length(beads.gates)), rep("Before", length(beads.gates)))
-    plot_beads_medians(beads.medians)
+    beads.medians$type <- c(rep("After", length(ll)), rep("Before", length(ll)))
+    beads.medians$type <- factor(beads.medians$type, levels = c("Before", "After"))
+    plot_beads_medians(beads.medians, file.path(out.dir.path, "beads_before_and_after.pdf"))
 
 }
