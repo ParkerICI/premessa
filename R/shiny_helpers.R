@@ -16,6 +16,12 @@ get_parameter_name <- function(fcs, i) {
     return(as.vector(unname(flowCore::parameters(fcs)$name[i])))
 }
 
+find_beads_channels_names <-  function(fcs, bead.type = c("Fluidigm", "Beta")) {
+    beads.cols <- find_bead_channels(fcs, bead.type)
+    return(get_parameter_name(fcs, beads.cols))
+}
+
+
 get_initial_beads_gates <- function(fcs) {
     beta.beads <- find_bead_channels(fcs, "Beta")
     fluidigm.beads <- find_bead_channels(fcs, "Fluidigm")

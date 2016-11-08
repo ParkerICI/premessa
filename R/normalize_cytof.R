@@ -202,18 +202,27 @@ calculate_baseline <- function(wd, beads.gates, beads.type) {
 }
 
 
-plot_beads_medians <- function(tab, out.name) {
+#' Calculates the Mahalanobis distance of each event from the centroid of the beads population
+#'
+#' @param m The untransformed matrix of data. Must contain a column called \code{beadEvent} which indicates
+#' when the corresponding event is a bead (1) or not (0)
+#' @param beads.cols.names The names of the bead columns
+#'
+#' @return A vector of length \code{nrow(m)} containing the \code{sqrt} of the Mahalanobis distance of each of
+#' \code{m} from the centroid of the beads population
+#'
+#'
+get_mahalanobis_distance_from_beads <- function(m, beads.cols.names) {
+    beads.events <- m[, "beadEvent"] == 1
+    m <- m[, beads.cols.names]
+    m <- asinh(m / 5)
+    beads.data <- m[beads.events,]
 
-    m <- reshape::melt(tab, id.vars = c("sample", "type"))
-
-    (p <- ggplot2::ggplot(ggplot2::aes(x = sample, y = asinh(value / 5), color = variable, group = variable), data = m)
-        + ggplot2::facet_wrap(~type, ncol = 1)
-        + ggplot2::geom_line()
-        + ggplot2::theme(axis.text.x = element_text(angle = 45, hjust = 1))
-        + ggplot2::scale_y_continuous("Intensity (asinh transformed)")
-    )
-    ggsave(out.name, plot = p, width = 11, height = 8.5, units = "in")
+    cov.m <- cov(beads.data)
+    ret <- sqrt(mahalanobis(m, colMeans(beads.data), cov.m))
+    return(ret)
 }
+
 
 
 
