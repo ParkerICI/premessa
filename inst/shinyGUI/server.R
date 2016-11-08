@@ -38,22 +38,58 @@ render_normalizer_ui <- function(working.directory, ...){renderUI({
     )
 })}
 
-generate_plot_outputs <- function(n) {renderUI({
+generate_normalizerui_plot_outputs <- function(n) {renderUI({
     lapply(1:n, function(i) {
         column(2,
             gatePlot(paste("normalizerui_gateplot", i, sep = ""))
         )
     })
 
-
 })}
 
 
+generate_beadremovalui_plot_outputs <- function(n) {renderUI({
+    lapply(1:n, function(i) {
+        column(4,
+            plotOutput(paste("beadremovalui_plot", i, sep = ""))
+        )
+    })
+})}
+
 shinyServer(function(input, output, session) {
     working.directory <- "C:\\Users\\fgherardini\\temp\\bead-normalization\\sample_data"
+    beadremovalui.plots.number <- 3
+
     output$normalizerUI <- render_normalizer_ui(working.directory, input, output, session)
-    output$normalizerUI_plot_outputs <- generate_plot_outputs(5)
+    output$normalizerUI_plot_outputs <- generate_normalizerui_plot_outputs(5)
     output$beadremovalUI <- render_beadremoval_ui(working.directory, input, output, session)
+    output$beadremovalUI_plot_outputs <- generate_beadremovalui_plot_outputs(beadremovalui.plots.number)
+
+    #beadremovalUI functions
+
+    observe({
+        normed.dir <- file.path(working.directory, "normed")
+        if(!is.null(input$beadremovalui_selected_fcs) && input$beadremovalui_selected_fcs != "") {
+            fcs <- flowCore::read.FCS(file.path(normed.dir, input$beadremovalui_selected_fcs))
+            beads.type <-  cytofNormalizeR:::get_beads_type_from_description(input$beadremovalui_beads_type)
+
+            beads.cols.names <- cytofNormalizeR:::find_beads_channels_names(fcs, beads.type)
+            combs <- rep(beads.cols.names, length.out = beadremovalui.plots.number * 2)
+
+            m <- flowCore::exprs(fcs)
+            m <- m[sample(1:nrow(m), size = 50000),]
+
+            lapply(seq(1, length(combs), 2), function(i) {
+                plot.idx <- ceiling(i / 2)
+                plot.output <- cytofNormalizeR:::plot_distance_from_beads(m, combs[i], combs[i + 1])
+                output[[paste("beadremovalui_plot", plot.idx, sep ="")]] <- renderPlot(plot.output)
+            })
+        }
+    })
+
+
+
+    #normalizerUI functions
 
     beads.gates <- reactiveValues()
 
@@ -89,7 +125,7 @@ shinyServer(function(input, output, session) {
     })
 
     get_beads_type <- reactive({
-        unlist(regmatches(input$normalizerui_beads_type, regexec("Fluidigm|Beta", input$normalizerui_beads_type)))
+        cytofNormalizeR:::get_beads_type_from_description(input$normalizerui_beads_type)
     })
 
 
@@ -138,6 +174,7 @@ shinyServer(function(input, output, session) {
     observeEvent(input$normalizerui_normalize_files, {
         beads.type <- get_beads_type()
         cytofNormalizeR::normalize_folder(working.directory, "normed", beads.gates, beads.type)
+        #update the select field in the beadremovalUI
 
     })
 

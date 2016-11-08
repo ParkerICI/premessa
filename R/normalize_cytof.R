@@ -265,6 +265,7 @@ normalize_folder <- function(wd, output.dir.name, beads.gates, beads.type) {
         m.normed <- norm.res$m.normed
         m.normed <- cbind(m.normed, beadEvent = 0)
         m.normed[beads.events, "beadEvent"] <- 1
+        m.normed <- cbind(m.normed, beadDist = get_mahalanobis_distance_from_beads(m.normed, beads.cols.names))
 
         write_FCS(m.normed, file.path(out.dir.path, f.name), fcs)
         beads.normed <- apply(norm.res$beads.normed[, beads.cols], 2, median)

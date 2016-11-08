@@ -15,7 +15,14 @@ shinyUI(
             )
         ),
         tabPanel("Remove beads",
-            uiOutput("beadremovalUI")
+            fluidPage(
+                fluidRow(
+                    uiOutput("beadremovalUI")
+                ),
+                fluidRow(
+                    uiOutput("beadremovalUI_plot_outputs")
+                )
+            )
         )
     )
 )

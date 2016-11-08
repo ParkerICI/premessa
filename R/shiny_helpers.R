@@ -21,6 +21,11 @@ find_beads_channels_names <-  function(fcs, bead.type = c("Fluidigm", "Beta")) {
     return(get_parameter_name(fcs, beads.cols))
 }
 
+get_beads_type_from_description <- function(s) {
+    ret <- unlist(regmatches(s, regexec("Fluidigm|Beta", s)))
+    return(ret)
+}
+
 
 get_initial_beads_gates <- function(fcs) {
     beta.beads <- find_bead_channels(fcs, "Beta")
