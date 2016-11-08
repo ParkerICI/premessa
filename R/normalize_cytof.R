@@ -249,12 +249,15 @@ normalize_folder <- function(wd, output.dir.name, beads.gates, beads.type) {
         dna.col <- find_dna_channel(fcs)
 
         m <- flowCore::exprs(fcs)
-        #This requires to have the beads for each individual file
         beads.events <- identify_beads(asinh(m / 5), beads.gates[[f.name]], beads.cols.names, dna.col)
         beads.data <- m[beads.events,]
 
         norm.res <- correct_data_channels(m, beads.data, baseline, beads.cols.names)
-        write_FCS(norm.res$m.normed, file.path(out.dir.path, f.name), fcs)
+        m.normed <- norm.res$m.normed
+        m.normed <- cbind(m.normed, beadEvent = 0)
+        m.normed[beads.events, "beadEvent"] <- 1
+
+        write_FCS(m.normed, file.path(out.dir.path, f.name), fcs)
         beads.normed <- apply(norm.res$beads.normed[, beads.cols], 2, median)
         beads.smoothed <- apply(norm.res$beads.smoothed[, beads.cols], 2, median)
 

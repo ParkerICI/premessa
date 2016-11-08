@@ -5,7 +5,24 @@ gatePlot <- function (outputId) {
 
 
 
+render_beadremoval_ui <- function(working.directory, ...) {renderUI({
+    fluidPage(
+        fluidRow(
+            column(9,
+                   selectizeInput("beadremovalui_beads_type", "Select beads type", multiple = FALSE, width = "100%",
+                                  choices = c("Fluidigm Beads (140,151,153,165,175)", "Beta Beads (139,141,159,169,175)")),
+                   selectizeInput("beadremovalui_selected_fcs", "Select FCS file",
+                                  choices = c("", list.files(file.path(working.directory, "normed"), pattern = "*.fcs$")), multiple = FALSE, width = "100%")
+            )
+        )
+    )
+
+
+})}
+
+
 render_normalizer_ui <- function(working.directory, ...){renderUI({
+    #Remove this fluidpage?
     fluidPage(
         fluidRow(
             column(9,
@@ -36,6 +53,7 @@ shinyServer(function(input, output, session) {
     working.directory <- "C:\\Users\\fgherardini\\temp\\bead-normalization\\sample_data"
     output$normalizerUI <- render_normalizer_ui(working.directory, input, output, session)
     output$normalizerUI_plot_outputs <- generate_plot_outputs(5)
+    output$beadremovalUI <- render_beadremoval_ui(working.directory, input, output, session)
 
     beads.gates <- reactiveValues()
 

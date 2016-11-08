@@ -13,6 +13,9 @@ shinyUI(
 
                 )
             )
+        ),
+        tabPanel("Remove beads",
+            uiOutput("beadremovalUI")
         )
     )
 )
