@@ -53,39 +53,30 @@ copy_keywords_name_desc <- function(source.frame, target.frame) {
 
 
 
-#' Write FCS files, with proper processing of parameters and keywords
+#' Convert a matrix to a flowFrame object
+#'
+#' This function converts a matrix to a \code{flowFrame} object, taking care of properly setting
+#' parameters and keywords in the resulting object
 #'
 #' @param exprs.m The data matrix. Parameter names will be taken from \code{colnames(exprs.m)},
 #' but see also the description of the \code{source.flowFrame} parameter
-#' @param out.name The name of the output file
 #' @param source.flowFrame If a flowFrame object is supplied, the function will copy matching names and descriptions
 #' keywords from it (e.g. $P1S in the \code{source.flowFrame} is copied to $P1S of the new flowFrame etc.). Extra columns present
 #' in exprs.m are preserved (i.e. if source.flowFrame doesn't contain $P1S the original version is preserved)
 #'
-write_FCS <- function(exprs.m, out.name, source.flowFrame = NULL) {
+#' @return Returns a \code{flowFrame} object
+#'
+#' @export
+as_flowFrame <- function(exprs.m, source.flowFrame = NULL) {
     flow.frame <- flowCore::flowFrame(exprs.m)
     flow.frame <- update_flowFrame_keywords(flow.frame, exprs.m)
 
     if(!is.null(source.flowFrame))
         flow.frame <- copy_keywords_name_desc(source.flowFrame, flow.frame)
+    return(flow.frame)
 
-    flowCore::write.FCS(flow.frame, out.name)
 }
 
-
-slide_function <- function(data, window, fun, step = 1, ...) {
-    res <- NULL
-    total <- length(data)
-
-    if(total >= window) {
-        spots <- seq(from = 1, to = (total - window + 1), by = step)
-        res <- vapply(spots, FUN = function(i) {return(median(data[i:(i + window - 1)], ...))}, FUN.VALUE = 1)
-    }
-    else
-        res <- fun(data, ...)
-
-    return(res)
-}
 
 smooth_beads <- function(beads.data, window.size = 201) {
     #ret <- apply(beads.data, 2, function(x) {return(slide_function(x, window = window.size, fun = median))})
@@ -224,6 +215,25 @@ get_mahalanobis_distance_from_beads <- function(m, beads.cols.names) {
 }
 
 
+#' Remove beads from an FCS file
+#'
+#' @param fcs The \code{flowFrame} object from which beads must be removed. Must contain a column
+#' called \code{beadDist} representing the Mahalanobis distance of each event from the centroid
+#' of the beads population
+#' @param dist.threshold The Mahalanobis distance threhsold for beads removal. Events with
+#' \code{beadDist <= dist.threshold} will be removed
+#'
+#' @return Returns a \code{flowFrame} object with beads removed
+#'
+#'
+#' @export
+remove_beads_from_fcs <- function(fcs, dist.threshold) {
+    m <- flowCore::exprs(fcs)
+    m <- m[m[, "beadDist"] > dist.threshold, ]
+
+    ret <- as_flowFrame(m, fcs)
+    return(ret)
+}
 
 
 #' Normalize a folder of FCS files
@@ -267,7 +277,9 @@ normalize_folder <- function(wd, output.dir.name, beads.gates, beads.type) {
         m.normed[beads.events, "beadEvent"] <- 1
         m.normed <- cbind(m.normed, beadDist = get_mahalanobis_distance_from_beads(m.normed, beads.cols.names))
 
-        write_FCS(m.normed, file.path(out.dir.path, f.name), fcs)
+
+        out.name <- paste(tools::file_path_sans_ext(f.name), "normalized.fcs", sep = "_")
+        flowCore::write.FCS(as_flowFrame(m.normed, fcs), file.path(out.dir.path, out.name))
         beads.normed <- apply(norm.res$beads.normed[, beads.cols], 2, median)
         beads.smoothed <- apply(norm.res$beads.smoothed[, beads.cols], 2, median)
 

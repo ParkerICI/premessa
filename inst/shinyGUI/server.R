@@ -8,11 +8,16 @@ gatePlot <- function (outputId) {
 render_beadremoval_ui <- function(working.directory, ...) {renderUI({
     fluidPage(
         fluidRow(
-            column(9,
+            column(12,
                    selectizeInput("beadremovalui_beads_type", "Select beads type", multiple = FALSE, width = "100%",
                                   choices = c("Fluidigm Beads (140,151,153,165,175)", "Beta Beads (139,141,159,169,175)")),
                    selectizeInput("beadremovalui_selected_fcs", "Select FCS file",
-                                  choices = c("", list.files(file.path(working.directory, "normed"), pattern = "*.fcs$")), multiple = FALSE, width = "100%")
+                                  choices = c("", list.files(file.path(working.directory, "normed"), pattern = "*.fcs$")), multiple = FALSE, width = "100%"),
+                   numericInput("beadremovalui_cutoff", "Cutoff for bead removal", value = 0, min = 0, max = 20),
+                   verbatimTextOutput("beadremovalui_dialog"),
+                   actionButton("beadremovalui_remove_beads", "Remove beads (current file)"),
+                   actionButton("beadremovalui_remove_beads_all_files", "Remove beads (all files)")
+
             )
         )
     )
@@ -25,18 +30,29 @@ render_normalizer_ui <- function(working.directory, ...){renderUI({
     #Remove this fluidpage?
     fluidPage(
         fluidRow(
-            column(9,
+            column(12,
                 selectizeInput("normalizerui_beads_type", "Select beads type", multiple = FALSE, width = "100%",
                                choices = c("Fluidigm Beads (140,151,153,165,175)", "Beta Beads (139,141,159,169,175)")),
                 selectizeInput("normalizerui_selected_fcs", "Select FCS file",
                             choices = c("", list.files(working.directory, pattern = "*.fcs$")), multiple = FALSE, width = "100%"),
+                p("You have gated beads for the following files (Only these files will be normalized):"),
+                verbatimTextOutput("normalizerui_dialog"),
                 actionButton("normalizerui_identify_beads", "Identify beads"),
-                actionButton("normalizerui_normalize_files", "Normalize"),
-                verbatimTextOutput("dialog")
+                actionButton("normalizerui_apply_gates_all_files", "Apply current gates to all files"),
+                actionButton("normalizerui_normalize_files", "Normalize")
             )
         )
     )
 })}
+
+remove_beads_from_file <- function(fcs, cutoff, input.fname, out.dir) {
+    if(!is.null(fcs)) {
+        out.fname <- tools::file_path_sans_ext(input.fname)
+        out.fname <- paste(out.fname, "beadsremoved.fcs", sep = "_")
+        fcs.removed <- cytofNormalizeR::remove_beads_from_fcs(fcs, cutoff)
+        flowCore::write.FCS(fcs.removed, file.path(out.dir, out.fname))
+    }
+}
 
 generate_normalizerui_plot_outputs <- function(n) {renderUI({
     lapply(1:n, function(i) {
@@ -58,6 +74,8 @@ generate_beadremovalui_plot_outputs <- function(n) {renderUI({
 
 shinyServer(function(input, output, session) {
     working.directory <- "C:\\Users\\fgherardini\\temp\\bead-normalization\\sample_data"
+    normed.dir <- file.path(working.directory, "normed")
+    beads.removed.dir <- file.path(normed.dir, "beads_removed")
     beadremovalui.plots.number <- 3
 
     output$normalizerUI <- render_normalizer_ui(working.directory, input, output, session)
@@ -67,8 +85,46 @@ shinyServer(function(input, output, session) {
 
     #beadremovalUI functions
 
+    beadremovalui.reactive.values <- reactiveValues(dialog.text = "")
+
+    output$beadremovalui_dialog <- renderText({
+        beadremovalui.reactive.values[["dialog.text"]]
+    })
+
+    get_beadremovalui_fcs <- reactive({
+        ret <- NULL
+
+        if(!is.null(input$beadremovalui_selected_fcs) && input$beadremovalui_selected_fcs != "")
+            ret <- flowCore::read.FCS(file.path(normed.dir, input$beadremovalui_selected_fcs))
+
+        return(ret)
+    })
+
+    observeEvent(input$beadremovalui_remove_beads, {
+            isolate({
+                fcs <- get_beadremovalui_fcs()
+                dir.create(beads.removed.dir, recursive = T)
+                remove_beads_from_file(fcs, input$beadremovalui_cutoff, input$beadremovalui_selected_fcs, beads.removed.dir)
+                beadremovalui.reactive.values[["dialog.text"]] <- sprintf("Beads removed from file: %s", input$beadremovalui_selected_fcs)
+            })
+        }
+    )
+
+   observeEvent(input$beadremovalui_remove_beads_all_files, {
+            isolate({
+                dir.create(beads.removed.dir, recursive = T)
+                files.list <- list.files(normed.dir, pattern = "*.fcs$")
+                files.list <- lapply(files.list, function(f.name) {
+                    fcs <- flowCore::read.FCS(file.path(normed.dir, f.name))
+                    remove_beads_from_file(fcs, input$beadremovalui_cutoff, f.name, beads.removed.dir)
+                    return(f.name)
+                })
+                beadremovalui.reactive.values[["dialog.text"]] <- sprintf("Beads removed from files: %s", paste(files.list, collapse = ", "))
+            })
+        }
+    )
+
     observe({
-        normed.dir <- file.path(working.directory, "normed")
         if(!is.null(input$beadremovalui_selected_fcs) && input$beadremovalui_selected_fcs != "") {
             fcs <- flowCore::read.FCS(file.path(normed.dir, input$beadremovalui_selected_fcs))
             beads.type <-  cytofNormalizeR:::get_beads_type_from_description(input$beadremovalui_beads_type)
@@ -93,10 +149,24 @@ shinyServer(function(input, output, session) {
 
     beads.gates <- reactiveValues()
 
+    output$normalizerui_dialog <- renderText({
+        paste(names(beads.gates), collapse = ", ")
+    })
+
+
+    observeEvent(input$normalizerui_apply_gates_all_files, {
+        isolate({
+            cur.gates <- get_beads_gates_for_current_file()
+            files.list <- list.files(working.directory, pattern = "*.fcs$")
+            lapply(files.list, function(f.name) {
+                beads.gates[[f.name]] <- cur.gates
+                NULL
+            })
+        })
+    })
 
     get_beads_gates_for_current_file <- reactive({
             if(!input$normalizerui_selected_fcs %in% names(beads.gates)) {
-                print("Initializing gates")
                 fcs <- get_fcs()
                 beads.gates[[input$normalizerui_selected_fcs]] <<- cytofNormalizeR:::get_initial_beads_gates(fcs)
             }
@@ -172,15 +242,17 @@ shinyServer(function(input, output, session) {
     })
 
     observeEvent(input$normalizerui_normalize_files, {
-        beads.type <- get_beads_type()
-        cytofNormalizeR::normalize_folder(working.directory, "normed", beads.gates, beads.type)
-        #update the select field in the beadremovalUI
+        isolate({
+            beads.type <- get_beads_type()
+            cytofNormalizeR::normalize_folder(working.directory, "normed", beads.gates, beads.type)
+            updateSelectizeInput(session, input$beadremovalui_selected_fcs,
+                                 choices = c("", list.files(normed.dir, pattern = "*normalized.fcs$")))
+        })
 
     })
 
     observeEvent(input$normalizerui_identify_beads, {
         isolate({
-            print("Identifying")
             fcs <- get_fcs()
             m <- get_exprs()
             dna.col <- cytofNormalizeR:::find_dna_channel(fcs)
