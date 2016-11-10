@@ -21,9 +21,11 @@ var paintPoint = function(ctx, d, xScale, yScale, r) {
     var offScreen = document.createElement('canvas');
     var r = 2;
     var d = r * 2;
+    //Spacing between the circles to avoid anti-aliasing problems
+    var pad = 10;
     colors = ['black', 'red'];
 
-    offScreen.width = d * colors.length;
+    offScreen.width = (d + pad) * colors.length;
     offScreen.height = d;
 
     var offCtx = offScreen.getContext('2d');
@@ -31,14 +33,14 @@ var paintPoint = function(ctx, d, xScale, yScale, r) {
     colors.forEach(function(c, i) {
         offCtx.fillStyle = c;
         offCtx.beginPath();
-        offCtx.arc((i * d) + r, r, r, 0, 2 * Math.PI);
+        offCtx.arc((i * (d + pad)) + r, r, r, 0, 2 * Math.PI);
         offCtx.closePath();
         offCtx.fill();
         
     });
 
     plotData.forEach(function(datum, i, a) {
-        ctx.drawImage(offScreen, datum.color * d, 0, d, d, xScale(datum.x) - r, yScale(datum.y) - r, d, d);
+        ctx.drawImage(offScreen, datum.color * (d + pad), 0, d, d, xScale(datum.x) - r, yScale(datum.y) - r, d, d);
     });
 
 }

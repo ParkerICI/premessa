@@ -73,7 +73,7 @@ generate_beadremovalui_plot_outputs <- function(n) {renderUI({
 })}
 
 shinyServer(function(input, output, session) {
-    working.directory <- "C:\\Users\\fgherardini\\temp\\bead-normalization\\sample_data"
+    working.directory <- dirname(file.choose())
     normed.dir <- file.path(working.directory, "normed")
     beads.removed.dir <- file.path(normed.dir, "beads_removed")
     beadremovalui.plots.number <- 3
