@@ -4,17 +4,25 @@
 \alias{calculate_baseline}
 \title{Calculate baseline for normalization}
 \usage{
-calculate_baseline(wd, beads.gates, beads.type)
+calculate_baseline(wd, beads.type, files.type = c("data", "beads"),
+  beads.gates = NULL)
 }
 \arguments{
 \item{wd}{Working directory (character)}
+
+\item{beads.type}{Type of beads. Must be on of \code{"Fluidigm"}, \code{"Beta"}}
+
+\item{files.type}{The type of FCS files contained in \code{wd}. If \code{data}, the files represent
+full datasets (i.e. beads + cells events), the gates in \code{beads.gates} will be applied to extract
+the beads, and the median intensity of the beads events will be returned to be used as baseline
+for normalization. If \code{beads}, the files are assumed to only contain beads events. The
+\code{beads.gates} parameter is ignored, and the median of all the beads events (i.e. the entire
+content of the files) will be returned.}
 
 \item{beads.gates}{Gates to identify the beads. This is a data structure with the following format
 \code{list(file_name = list(channel_name = list(x = [xMin, xMax], y = [yMin, yMax]), ...), ...)}.
 Note that only files in \code{names(beads.gates)} will be processed. Also note that the data structure
 may contain gates for extra channels, but which channels will be used depends on the \code{beads.type} parameter}
-
-\item{beads.type}{Type of beads. Must be on of \code{"Fluidigm"}, \code{"Beta"}}
 }
 \value{
 Returns a vector with the medians of the beads events across all processed files

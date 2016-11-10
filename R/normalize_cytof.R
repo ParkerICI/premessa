@@ -168,21 +168,38 @@ identify_beads <- function(m, gates, beads.cols.names, dna.col) {
 #'
 #' Extract beads events from all the FCS files in the working directory
 #' and calculates the baseline for normalization
+#'
 #' @inheritParams normalize_folder
+#' @param files.type The type of FCS files contained in \code{wd}. If \code{data}, the files represent
+#'  full datasets (i.e. beads + cells events), the gates in \code{beads.gates} will be applied to extract
+#'  the beads, and the median intensity of the beads events will be returned to be used as baseline
+#'  for normalization. If \code{beads}, the files are assumed to only contain beads events. The
+#'  \code{beads.gates} parameter is ignored, and the median of all the beads events (i.e. the entire
+#'  content of the files) will be returned.
 #'
 #' @return Returns a vector with the medians of the beads events across all processed files
 #'
-calculate_baseline <- function(wd, beads.gates, beads.type) {
-    ret <- lapply(names(beads.gates), function(f.name) {
+calculate_baseline <- function(wd, beads.type, files.type = c("data", "beads"), beads.gates = NULL) {
+    files.type <- match.arg(files.type)
+
+    files.list <- switch(files.type,
+        "data" = names(beads.gates),
+        "beads" = list.files(wd, pattern = "*.fcs$")
+    )
+
+    ret <- lapply(files.list, function(f.name) {
         fcs <- flowCore::read.FCS(file.path(wd, f.name))
-        beads.cols <- find_bead_channels(fcs, beads.type)
-        beads.cols.names <- get_parameter_name(fcs, beads.cols)
+        beads.cols.names <- find_beads_channels_names(fcs, beads.type)
         dna.col <- find_dna_channel(fcs)
 
         m <- flowCore::exprs(fcs)
-        m.transformed <- asinh(m / 5)
+        if(files.type == "data") {
+            m.transformed <- asinh(m / 5)
+            sel <- identify_beads(m.transformed, beads.gates[[f.name]], beads.cols.names, dna.col)
+        } else {
+            sel <- rep(TRUE, nrow(m))
+        }
 
-        sel <- identify_beads(m.transformed, beads.gates[[f.name]], beads.cols.names, dna.col)
         #The gating is done on transformed data, but we return the untransformed
         return(m[sel,])
     })
@@ -191,6 +208,7 @@ calculate_baseline <- function(wd, beads.gates, beads.type) {
     ret <- apply(ret, 2, median)
     return(ret)
 }
+
 
 
 #' Calculates the Mahalanobis distance of each event from the centroid of the beads population
@@ -223,15 +241,21 @@ get_mahalanobis_distance_from_beads <- function(m, beads.cols.names) {
 #' @param dist.threshold The Mahalanobis distance threhsold for beads removal. Events with
 #' \code{beadDist <= dist.threshold} will be removed
 #'
-#' @return Returns a \code{flowFrame} object with beads removed
+#' @return Returns a list of two \code{flowFrame} objects
+#' \itemize{
+#'  \item \code{data.fcs} The data without the beads events
+#'  \item \code{beads.fcs} The beads events
+#' }
 #'
 #'
 #' @export
 remove_beads_from_fcs <- function(fcs, dist.threshold) {
     m <- flowCore::exprs(fcs)
-    m <- m[m[, "beadDist"] > dist.threshold, ]
+    beads.events <- m[, "beadDist"] <= dist.threshold
+    data.fcs <- as_flowFrame(m[!beads.events, ], fcs)
+    beads.fcs <- as_flowFrame(m[beads.events, ], fcs)
 
-    ret <- as_flowFrame(m, fcs)
+    ret <- list(data.fcs = data.fcs, beads.fcs = beads.fcs)
     return(ret)
 }
 
@@ -249,17 +273,22 @@ remove_beads_from_fcs <- function(fcs, dist.threshold) {
 #'  Note that only files in \code{names(beads.gates)} will be processed. Also note that the data structure
 #'  may contain gates for extra channels, but which channels will be used depends on the \code{beads.type} parameter
 #' @param beads.type Type of beads. Must be on of \code{"Fluidigm"}, \code{"Beta"}
+#' @param baseline If \code{NULL} the median beads intensities of the current files will be used as baseline
+#'  for normalization. Alternatively this can be a character string with the path of a directory containing
+#'  FCS files of beads events, whose median intensities will be used as baseline.
 #'
 #'
 #' @export
-normalize_folder <- function(wd, output.dir.name, beads.gates, beads.type) {
+normalize_folder <- function(wd, output.dir.name, beads.gates, beads.type, baseline = NULL) {
 
-    baseline <- calculate_baseline(wd, beads.gates, beads.type)
+    baseline.data <- NULL
+    if(is.null(baseline))
+        baseline.data <- calculate_baseline(wd, beads.type, files.type = "data", beads.gates)
+    else
+        baseline.data <- calculate_baseline(baseline, beads.type, files.type = "beads")
 
     out.dir.path <- file.path(wd, output.dir.name)
     dir.create(out.dir.path, recursive = T)
-
-
 
     ll <- lapply(names(beads.gates), function(f.name) {
         fcs <- flowCore::read.FCS(file.path(wd, f.name))
@@ -271,7 +300,7 @@ normalize_folder <- function(wd, output.dir.name, beads.gates, beads.type) {
         beads.events <- identify_beads(asinh(m / 5), beads.gates[[f.name]], beads.cols.names, dna.col)
         beads.data <- m[beads.events,]
 
-        norm.res <- correct_data_channels(m, beads.data, baseline, beads.cols.names)
+        norm.res <- correct_data_channels(m, beads.data, baseline.data, beads.cols.names)
         m.normed <- norm.res$m.normed
         m.normed <- cbind(m.normed, beadEvent = 0)
         m.normed[beads.events, "beadEvent"] <- 1

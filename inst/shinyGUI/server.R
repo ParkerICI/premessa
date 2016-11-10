@@ -35,6 +35,8 @@ render_normalizer_ui <- function(working.directory, ...){renderUI({
                                choices = c("Fluidigm Beads (140,151,153,165,175)", "Beta Beads (139,141,159,169,175)")),
                 selectizeInput("normalizerui_selected_fcs", "Select FCS file",
                             choices = c("", list.files(working.directory, pattern = "*.fcs$")), multiple = FALSE, width = "100%"),
+                selectizeInput("normalizerui_baseline", "Select baseline for normalization", multiple = FALSE, width = "100%",
+                            choices = c("Current files", "Existing folder of beads files")),
                 p("You have gated beads for the following files (Only these files will be normalized):"),
                 verbatimTextOutput("normalizerui_dialog"),
                 actionButton("normalizerui_identify_beads", "Identify beads"),
@@ -47,10 +49,15 @@ render_normalizer_ui <- function(working.directory, ...){renderUI({
 
 remove_beads_from_file <- function(fcs, cutoff, input.fname, out.dir) {
     if(!is.null(fcs)) {
-        out.fname <- tools::file_path_sans_ext(input.fname)
-        out.fname <- paste(out.fname, "beadsremoved.fcs", sep = "_")
-        fcs.removed <- cytofNormalizeR::remove_beads_from_fcs(fcs, cutoff)
-        flowCore::write.FCS(fcs.removed, file.path(out.dir, out.fname))
+        beads.dir <- file.path(out.dir, "beads")
+        dir.create(beads.dir, recursive = T)
+        base.fname <- tools::file_path_sans_ext(input.fname)
+        data.fname <- paste(base.fname, "beadsremoved.fcs", sep = "_")
+        beads.fname <- gsub("normalized", "beads.fcs", base.fname)
+
+        temp <- cytofNormalizeR::remove_beads_from_fcs(fcs, cutoff)
+        flowCore::write.FCS(temp$data.fcs, file.path(out.dir, data.fname))
+        flowCore::write.FCS(temp$beads.fcs, file.path(beads.dir, beads.fname))
     }
 }
 
@@ -244,7 +251,11 @@ shinyServer(function(input, output, session) {
     observeEvent(input$normalizerui_normalize_files, {
         isolate({
             beads.type <- get_beads_type()
-            cytofNormalizeR::normalize_folder(working.directory, "normed", beads.gates, beads.type)
+            baseline <- NULL
+            if(length(grep("^Existing", input$normalizerui_baseline)) > 0)
+                baseline <- dirname(file.choose())
+
+            cytofNormalizeR::normalize_folder(working.directory, "normed", beads.gates, beads.type, baseline = baseline)
             updateSelectizeInput(session, input$beadremovalui_selected_fcs,
                                  choices = c("", list.files(normed.dir, pattern = "*normalized.fcs$")))
         })
