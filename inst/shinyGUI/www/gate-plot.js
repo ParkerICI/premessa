@@ -57,9 +57,9 @@ $.extend(gatePlot, {
         data.color = data.color.map(function(d) { return(d == "black" ? 0 : 1); });
         var plotData = convertDataForD3({x: data.x, y: data.y, color: data.color});
         //top; right; bottom; left
-        var margins = [20, 20, 20, 20];
+        var margins = [50, 20, 50, 20];
         var width = 300 - margins[1] - margins[3];
-        var height = 250 - margins[0] - margins[2];
+        var height = 350 - margins[0] - margins[2];
 
         var canvas = d3.select(el)
                 .select("canvas")
@@ -80,7 +80,7 @@ $.extend(gatePlot, {
             .append("svg:g")
             .attr("transform", "translate(" + margins[3] + "," + margins[0] + ")");
         
-        
+
         var xScale = d3.scaleLinear()
             .range([0, width])
             .domain(d3.extent(plotData, function(d) { return(d.x); })).nice();
@@ -95,8 +95,8 @@ $.extend(gatePlot, {
         var yAxisG = svg.append("g")
                     .attr("class", "yAxis");
 
-        var xAxis = d3.axisBottom(xScale);
-        var yAxis = d3.axisLeft(yScale);
+        var xAxis = d3.axisBottom(xScale).ticks(7);
+        var yAxis = d3.axisLeft(yScale).ticks(7);
 
         var brushed = function() {
             var sel = d3.event.selection;
@@ -131,9 +131,13 @@ $.extend(gatePlot, {
 
         xAxisG.call(xAxis);
         yAxisG.call(yAxis);
-
-
-      
+        
+        svg.append("text")             
+            .attr("transform", "translate(" + (width / 2) + " ," + 
+                           (height + margins[0]) + ")")
+            .style("text-anchor", "middle")
+            .text(data.xAxisName);
+      // (height + margins[0] + 20) + ")")
         doPlot(ctx, plotData, xScale, yScale);
 
     }
