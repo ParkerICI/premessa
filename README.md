@@ -95,7 +95,7 @@ The workflow involves cycling through all the files and adjusting the beads gate
 
 You can cycle back and forth between different files, as the GUI will remember the gates you have selected for each file.
 
-When you hit the *Normalize* button, if
+If you want to use existing beads files as the baseline for normalization, a file dialog window will pop-up when you hit the *Normalize* button.
 
 
 
