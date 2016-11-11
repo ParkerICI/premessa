@@ -46,6 +46,7 @@ to stop cytofNormalizeR simply hit the "ESC" key in your R session.
 
 # Usage
 
+**Make sure to have a backup copy of your data before you use the software!**
 
 The normalization workflow involves the following steps:
 
