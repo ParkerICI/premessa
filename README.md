@@ -83,7 +83,7 @@ The GUI is organized in two tabs:
 - *Normalize data*: used for beads gating and data normalization 
 - *Remove beads*: used for beads removal
 
-## *Normalize data* tab
+## *Normalize data* panel
 
 This panel contains the following controls:
 
@@ -100,7 +100,7 @@ You can cycle back and forth between different files, as the GUI will remember t
 
 If you want to use existing beads files as the baseline for normalization, a file dialog window will pop-up when you hit the *Normalize* button. Use the window to navigate to a directory containing FCS files containing beads events only (for instance the *A_beads.fcs* file in the above example) and select one of the files. The software will then load *all* the files contained in the same directory as the file you selected.
 
-## *Remove beads* tab
+## *Remove beads* panel
 
 This panel has the following controls
 
@@ -114,7 +114,9 @@ The *Select FCS file* dropdown menu will contain all the FCS files that are in t
 
 The bead removal procedure is based on the idea of looking at the distance between each event and the centroid of the beads population, and removing all the events that are closer than a given threshold to the beads population, and therefore are likely to represent beads as opposed to true cells.
 
-To this end, during the normalization the software calculates the square root of the Mahalanobis distance of each event from the centroid of the beads population, and records this information in the *beadDist* parameter in the FCS file with the normalized data.
+To this end, during the normalization the software calculates the square root of the Mahalanobis distance of each event from the centroid of the beads population, and records this information in the *beadDist* parameter in the FCS file with the normalized data (i.e. the *_normalized.fcs* files in the *normed* sub-folder).
+
+During the beads removal step, all the events whose *beadDist* is less or equal than the *Cutoff for bead removal* parameter are removed from the FCS. The removed events are stored in the 
 
 
 
