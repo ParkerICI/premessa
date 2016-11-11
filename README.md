@@ -44,7 +44,7 @@ to stop cytofNormalizeR simply hit the "ESC" key in your R session.
 *Note*: the latest version of devtools seems to be occasionally having problems installing dependencies on windows. If the installation of cytofNormalizeR fails for a missing package, please install the offending packages manually, using the R *install.packages* function
 
 
-#Usage
+# Usage
 
 
 The normalization workflow involves the following steps:
@@ -76,9 +76,15 @@ working_directory
 - *A_normalized_beadsremoved.fcs*: the normalized data with the beads events removed
 - *A_beads.fcs*: the beads events that have been removed
 
+The GUI is organized in two tabs:
+- *Normalize data*: used for beads gating and data normalization 
+- *Remove beads*: used for beads removal
 
+## *Normalize data* tab
 
-The GUI has two tabs *Normalize data* and *Remove beads*.
+This panel contains the following controls:
+
+-*Select beads type*: select the type of normalization beads that have been used for the experiment. Most users will select the default *Fluidigm Beads (140, 151, 153, 165, 175)*. These are the beads [sold](https://www.fluidigm.com/reagents/proteomics/201078-eq-four-element-calibration-beads--100ml) by Fluidigm. The numbers indicate the beads channels used for normalization.
 
 
 #Differences with the Matlab Normalizer
