@@ -62,6 +62,7 @@ working_directory
 |--- normed
      |--- A_normalized.fcs
      |--- B_normalized.fcs
+     |--- beads_before_and_after.pdf
      |--- beads_removed
           |--- A_normalized_beadsremoved.fcs
           |--- B_normalized_beadsremoved.fcs
@@ -69,6 +70,12 @@ working_directory
                |--- A_beads.fcs
                |--- B_beads.fcs
 ```
+
+- *A_normalized.fcs*: contains the normalized data, with an added parameter called *beadDist* representing the square root of the Mahalanobis distance of each event from the centroid of the beads population
+- *beads_before_and_after.pdf*: a plot of the median intensities of the beads channels before and after normalization
+- *A_normalized_beadsremoved.fcs*: the normalized data with the beads events removed
+- *A_beads.fcs*: the beads events that have been removed
+
 
 
 The GUI has two tabs *Normalize data* and *Remove beads*.
