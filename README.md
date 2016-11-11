@@ -49,10 +49,26 @@ to stop cytofNormalizeR simply hit the "ESC" key in your R session.
 
 The normalization workflow involves the following steps:
 
-1) Beads identification through gating
-2) Data normalization
-3) Beads removal (optional)
+1. Beads identification through gating
+2. Data normalization
+3. Beads removal (optional)
 
+Assuming the working directory is called *working_directory* and  contains two FCS files called *A.fcs* and *B.fcs*, at the end of the workflow the following directory structure and output files will be generated
+
+```
+working_directory
+|--- A.fcs
+|--- B.fcs
+|--- normed
+     |--- A_normalized.fcs
+     |--- B_normalized.fcs
+     |--- beads_removed
+          |--- A_normalized_beadsremoved.fcs
+          |--- B_normalized_beadsremoved.fcs
+          |--- beads
+               |--- A_beads.fcs
+               |--- B_beads.fcs
+```
 
 
 The GUI has two tabs *Normalize data* and *Remove beads*.
