@@ -91,8 +91,14 @@ This panel contains the following controls:
 - *Apply current gates to all files*: applies the current gates to all the files.
 - *Normalize*: starts the normalization routine.
 
+The workflow involves cycling through all the files and adjusting the beads gates in the plot, in order to identify the beads. Only events that are included in *all* the beads gates are identified as beads. As detailed in the dialog box that is above the row of buttons, only files for which the gates have been defined will be used as input for normalization.
+
+You can cycle back and forth between different files, as the GUI will remember the gates you have selected for each file.
+
+When you hit the *Normalize* button, if
 
 
 
 #Differences with the Matlab Normalizer
 
+The normalization algorithm is exactly identical to the on used in the original Matlab implementation of the normalizer. The only differences relate to the way the GUI manages the workflow, and to the organization of the output directory structure.
