@@ -84,7 +84,14 @@ The GUI is organized in two tabs:
 
 This panel contains the following controls:
 
--*Select beads type*: select the type of normalization beads that have been used for the experiment. Most users will select the default *Fluidigm Beads (140, 151, 153, 165, 175)*. These are the beads [sold](https://www.fluidigm.com/reagents/proteomics/201078-eq-four-element-calibration-beads--100ml) by Fluidigm. The numbers indicate the beads channels used for normalization.
+- *Select beads type*: select the type of normalization beads that have been used for the experiment. Most users will select the default *Fluidigm Beads (140, 151, 153, 165, 175)*. These are the beads [sold](https://www.fluidigm.com/reagents/proteomics/201078-eq-four-element-calibration-beads--100ml) by Fluidigm. The numbers indicate the beads channels used for normalization.
+- *Select FCS file*: the FCS  that is currently being visualized for gating
+- *Select baseline for normalization*: the baseline beads intensities to be used for normalization. You can either use the median beads intensities of the FCS files that you are currently using for normalization (*Current files* option), or the median intensities of an existing set of beads files (*Existing folder of beads files*, see below).
+- *Identify beads*: clicking this button will color in red the events that are recognized as beads events in the gating plots.
+- *Apply current gates to all files*: applies the current gates to all the files.
+- *Normalize*: starts the normalization routine.
+
+
 
 
 #Differences with the Matlab Normalizer
