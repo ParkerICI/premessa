@@ -46,7 +46,7 @@ to stop cytofNormalizeR simply hit the "ESC" key in your R session.
 
 # Usage
 
-**Make sure to have a backup copy of your data before you use the software!**
+**---> Make sure to have a backup copy of your data before you use the software! <---**
 
 The normalization workflow involves the following steps:
 
@@ -77,6 +77,8 @@ working_directory
 - *A_normalized_beadsremoved.fcs*: the normalized data with the beads events removed
 - *A_beads.fcs*: the beads events that have been removed
 
+## Selecting the working directory
+
 The GUI is organized in two tabs:
 - *Normalize data*: used for beads gating and data normalization 
 - *Remove beads*: used for beads removal
@@ -96,7 +98,7 @@ The workflow involves cycling through all the files and adjusting the beads gate
 
 You can cycle back and forth between different files, as the GUI will remember the gates you have selected for each file.
 
-If you want to use existing beads files as the baseline for normalization, a file dialog window will pop-up when you hit the *Normalize* button.
+If you want to use existing beads files as the baseline for normalization, a file dialog window will pop-up when you hit the *Normalize* button. Use the window to navigate to a directory containing FCS files containing beads events only (for instance the *A_beads.fcs* file in the above example) and select one of the files. The software will then load *all* the files contained in the same directory as the file you selected.
 
 
 
