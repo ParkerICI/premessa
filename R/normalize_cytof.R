@@ -215,14 +215,14 @@ calculate_baseline <- function(wd, beads.type, files.type = c("data", "beads"), 
 #'
 #' @param m The untransformed matrix of data. Must contain a column called \code{beadEvent} which indicates
 #' when the corresponding event is a bead (1) or not (0)
+#' @param beads.events A vector of length \code{nrow(m)} indicating which rows of m represent beads events
 #' @param beads.cols.names The names of the bead columns
 #'
 #' @return A vector of length \code{nrow(m)} containing the \code{sqrt} of the Mahalanobis distance of each of
 #' \code{m} from the centroid of the beads population
 #'
 #'
-get_mahalanobis_distance_from_beads <- function(m, beads.cols.names) {
-    beads.events <- m[, "beadEvent"] == 1
+get_mahalanobis_distance_from_beads <- function(m, beads.events, beads.cols.names) {
     m <- m[, beads.cols.names]
     m <- asinh(m / 5)
     beads.data <- m[beads.events,]
@@ -288,7 +288,9 @@ normalize_folder <- function(wd, output.dir.name, beads.gates, beads.type, basel
         baseline.data <- calculate_baseline(baseline, beads.type, files.type = "beads")
 
     out.dir.path <- file.path(wd, output.dir.name)
-    dir.create(out.dir.path, recursive = T)
+    beads.dir.path <- file.path(out.dir.path, "beads")
+    #This will also create the upstram out.dir.path
+    dir.create(beads.dir.path, recursive = T)
 
     ll <- lapply(names(beads.gates), function(f.name) {
         fcs <- flowCore::read.FCS(file.path(wd, f.name))
@@ -302,13 +304,15 @@ normalize_folder <- function(wd, output.dir.name, beads.gates, beads.type, basel
 
         norm.res <- correct_data_channels(m, beads.data, baseline.data, beads.cols.names)
         m.normed <- norm.res$m.normed
-        m.normed <- cbind(m.normed, beadEvent = 0)
-        m.normed[beads.events, "beadEvent"] <- 1
-        m.normed <- cbind(m.normed, beadDist = get_mahalanobis_distance_from_beads(m.normed, beads.cols.names))
+        m.normed <- cbind(m.normed,
+                        beadDist = get_mahalanobis_distance_from_beads(m.normed, beads.events, beads.cols.names))
 
 
         out.name <- paste(tools::file_path_sans_ext(f.name), "normalized.fcs", sep = "_")
+        beads.file.name <- paste(tools::file_path_sans_ext(f.name), "beads.fcs", sep = "_")
         flowCore::write.FCS(as_flowFrame(m.normed, fcs), file.path(out.dir.path, out.name))
+        flowCore::write.FCS(as_flowFrame(m.normed[beads.events, ], fcs), file.path(beads.dir.path, beads.file.name))
+
         beads.normed <- apply(norm.res$beads.normed[, beads.cols], 2, median)
         beads.smoothed <- apply(norm.res$beads.smoothed[, beads.cols], 2, median)
 

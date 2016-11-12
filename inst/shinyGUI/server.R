@@ -49,11 +49,11 @@ render_normalizer_ui <- function(working.directory, ...){renderUI({
 
 remove_beads_from_file <- function(fcs, cutoff, input.fname, out.dir) {
     if(!is.null(fcs)) {
-        beads.dir <- file.path(out.dir, "beads")
+        beads.dir <- file.path(out.dir, "removed_events")
         dir.create(beads.dir, recursive = T)
         base.fname <- tools::file_path_sans_ext(input.fname)
         data.fname <- paste(base.fname, "beadsremoved.fcs", sep = "_")
-        beads.fname <- gsub("normalized", "beads.fcs", base.fname)
+        beads.fname <- paste(base.fname, "removedEvents.fcs", sep = "_")
 
         temp <- cytofNormalizeR::remove_beads_from_fcs(fcs, cutoff)
         flowCore::write.FCS(temp$data.fcs, file.path(out.dir, data.fname))
