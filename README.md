@@ -1,8 +1,9 @@
 # cytofNormalizeR
-R implementation of bead normalization for CyTOF data
+
+R implementation of bead normalization for CyTOF data. The idea behind the method is described in [this](https://www.ncbi.nlm.nih.gov/pubmed/23512433) publication. cytofNormalizeR is an R re-implementation of the [original](https://github.com/nolanlab/bead-normalization) normalization software developed for Matlab.
 
 
-#Installation
+# Installation
 
 
 ## Install required R packages
@@ -67,9 +68,12 @@ working_directory
      |--- beads_removed
           |--- A_normalized_beadsremoved.fcs
           |--- B_normalized_beadsremoved.fcs
-          |--- beads
-               |--- A_beads.fcs
-               |--- B_beads.fcs
+          |--- removed_events
+               |--- A_normalized_removedEvents.fcs
+               |--- B_normalized_removedEvents.fcs
+     |--- beads
+          |--- A_beads.fcs
+          |--- B_beads.fcs
 ```
 
 - *A_normalized.fcs*: contains the normalized data, with an added parameter called *beadDist* representing the square root of the Mahalanobis distance of each event from the centroid of the beads population
@@ -119,10 +123,6 @@ To this end, during the normalization the software calculates the square root of
 During the beads removal step, all the events whose *beadDist* is less or equal than the *Cutoff for bead removal* parameter are removed from the FCS. The removed events are saved in the *rmeoved_events* sub-folder (see above).
 
 The plots in the bottom half of the panel help you select an appropriate cutoff. They display all the pairs of beads channels. Beads should appear as a population in the upper right corner (as they will be double-positives for all the channel pairs). The color of the points represent the distance from the beads population. You should choose a cutoff so that most of the bead events are below the cutoff, and most of the non-beads events are above it. The legend for the color scale is located above the plots.
-
-
-
-
 
 #Differences with the Matlab Normalizer
 
