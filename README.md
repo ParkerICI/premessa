@@ -78,6 +78,8 @@ working_directory
 
 ## Starting the GUI and selecting the working directory
 
+Sample data for testing is available [here](https://github.com/nolanlab/bead-normalization/tree/master/sample_data) (only download the FCS in the top level directory, not the contents of the beads and normed sub-folders).
+
 You can start the cytofNormalizeR GUI by typing the following commands in your R session
 
 ```
