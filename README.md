@@ -36,7 +36,7 @@ install_github("ParkerICI/cytofNormalizeR")
 
 This will install the cytofNormalizeR R package together with all the required dependencies.
 
-*Note*: the latest version of devtools seems to be occasionally having problems installing dependencies on Windows. If the installation of cytofNormalizeR fails for a missing package, please install the offending packages manually, using the R *install.packages* function
+*Note*: the latest version of devtools seems to be occasionally having problems installing dependencies on Windows. If the installation of cytofNormalizeR fails due to a missing package, please install the offending packages manually, using the R *install.packages* function
 
 
 # Usage
@@ -76,7 +76,7 @@ working_directory
 - *A_normalized_removedEevents.fcs*: the events that have been removed from the normalized data based on the Mahalanobis distance cutoff 
 - *A_beads.fcs*: the beads events, as identified by gating
 
-## Selecting the working directory
+## Starting the GUI and selecting the working directory
 
 You can start the cytofNormalizeR GUI by typing the following commands in your R session
 
@@ -121,16 +121,18 @@ This panel has the following controls
  
 The bead removal procedure is based on the idea of looking at the distance between each event and the centroid of the beads population, and removing all the events that are closer than a given threshold to the beads population, and therefore are likely to represent beads as opposed to true cells.
 
-To this end, during the normalization the software calculates the square root of the Mahalanobis distance of each event from the centroid of the beads population, and records this information in the *beadDist* parameter in the FCS file with the normalized data (i.e. the *_normalized.fcs* files in the *normed* sub-folder).
+To this end, during normalization, the software calculates the square root of the Mahalanobis distance of each event from the centroid of the beads population, and records this information in the *beadDist* parameter in the FCS file with the normalized data (i.e. the *_normalized.fcs* files in the *normed* sub-folder).
 
-During the beads removal step, all the events whose *beadDist* is less or equal than the *Cutoff for bead removal* parameter are removed from the FCS. The removed events are saved in the *rmeoved_events* sub-folder (see above).
+During the beads removal step, all the events whose *beadDist* is less or equal than the *Cutoff for bead removal* parameter are removed from the FCS. The removed events are saved in the *removed_events* sub-folder (see above).
 
 The plots in the bottom half of the panel help you select an appropriate cutoff. They display all the pairs of beads channels. Beads should appear as a population in the upper right corner (as they will be double-positives for all the channel pairs). The color of the points represent the distance from the beads population. You should choose a cutoff so that most of the bead events are below the cutoff, and most of the non-beads events are above it. The legend for the color scale is located above the plots.
 
 # Differences with the Matlab Normalizer
 
-The normalization algorithm is exactly identical to the on used in the original Matlab implementation of the normalizer. The only differences relate to the way the GUI manages the workflow, and to the organization of the output directory structure.
+The normalization algorithm is exactly identical to the one used in the original Matlab implementation of the normalizer. The only differences relate to the way the GUI manages the workflow, and to the organization of the output directory structure.
 
 With the Matlab implementation, when you do gating and beads removal, you process one file at the time, and there is no way to look back at previously analyzed files, for instance for adjusting the gates.
 
-cytofNormalizeR separates the two steps of the workflow. First you setup the gates, moving back and forth between the input files as needed. This is useful for instance if you want to use the exact same gates for all the files, because you need to visualize all the data, before you can identify gates that will work across all the files. Once the gates have been setup, all the files are normalized and the results are saved. You then switch to the beads removal step, once again visualizing the files back and forth as needed, until you have selected an appropriate cutoff. You can then either remove beads from a single file, or from all the files simultaneously.
+cytofNormalizeR separates the two steps of the workflow. First you setup the gates, moving back and forth between the input files as needed. This is useful if, for instance, you want to use the exact same gates for all the files, because you need to visualize all the data, before you can identify gates that will work across all the files. Once the gates have been setup, all the files are normalized and the results are saved. 
+
+You then switch to the beads removal step, once again visualizing the files back and forth as needed, until you have selected an appropriate cutoff. You can then either remove beads from a single file, or from all the files simultaneously. Because the intermediate normalization results have been saved, you can repeat the beads removal step if needed.
