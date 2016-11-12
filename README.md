@@ -14,7 +14,9 @@ You need to install the devtools package, available from CRAN, and the flowCore 
 
 Open an R session, type the following command and select a CRAN mirror when prompted.
 
-`install.packages("devtools")`
+```
+install.packages("devtools")
+```
 
 #### FlowCore
 
