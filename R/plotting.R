@@ -15,7 +15,7 @@ plot_beads_medians <- function(tab, out.name) {
 
 
 hexbin_downsample <- function(m, x.var, y.var, ...) {
-    hex <- hexbin::hexbin(m[, x.var], m[, y.var], xbins = 300, IDs = T, ...)
+    hex <- hexbin::hexbin(m[, x.var], m[, y.var], xbins = 250, IDs = T, ...)
     return(m[!duplicated(hex@cID),])
 }
 

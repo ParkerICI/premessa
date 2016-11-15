@@ -80,6 +80,7 @@ generate_beadremovalui_plot_outputs <- function(n) {renderUI({
 })}
 
 shinyServer(function(input, output, session) {
+    options(warn = -1)
     working.directory <- dirname(file.choose())
     normed.dir <- file.path(working.directory, "normed")
     beads.removed.dir <- file.path(normed.dir, "beads_removed")
@@ -140,7 +141,6 @@ shinyServer(function(input, output, session) {
             combs <- rep(beads.cols.names, length.out = beadremovalui.plots.number * 2)
 
             m <- flowCore::exprs(fcs)
-            m <- m[sample(1:nrow(m), size = 50000),]
 
             lapply(seq(1, length(combs), 2), function(i) {
                 plot.idx <- ceiling(i / 2)
@@ -195,9 +195,9 @@ shinyServer(function(input, output, session) {
         m <- flowCore::exprs(fcs)
         m <- asinh(m / 5)
         if(nrow(m) > 50000) {
-            print("Subsampling")
             m <- m[sample(1:nrow(m), 50000),]
         }
+        return(m)
 
     })
 

@@ -4,11 +4,13 @@
 \alias{get_mahalanobis_distance_from_beads}
 \title{Calculates the Mahalanobis distance of each event from the centroid of the beads population}
 \usage{
-get_mahalanobis_distance_from_beads(m, beads.cols.names)
+get_mahalanobis_distance_from_beads(m, beads.events, beads.cols.names)
 }
 \arguments{
 \item{m}{The untransformed matrix of data. Must contain a column called \code{beadEvent} which indicates
 when the corresponding event is a bead (1) or not (0)}
+
+\item{beads.events}{A vector of length \code{nrow(m)} indicating which rows of m represent beads events}
 
 \item{beads.cols.names}{The names of the bead columns}
 }
