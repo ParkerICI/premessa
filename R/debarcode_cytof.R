@@ -12,8 +12,11 @@ bc.key <- read.csv("sample_barcode_key.csv", check.names = F, row.names = 1)
 
 
 
-
-#m.bcs[m.bcs[, expected.positive] < cutoff,] <- NA
+get_barcode_channels_names <- function(m, bc.key) {
+    masses <- names(bc.key)
+    grep.string <- paste(masses, collapse = "|")
+    return(grep(grep.string, colnames(m), value = T))
+}
 
 
 
@@ -71,15 +74,28 @@ normalize_by_pop <- function(m, bc.channels, bc.labels) {
     return(m)
 }
 
-get_well_abundances <- function(deltas, bc.labels, sep.thresholds) {
+get_assignemnts_at_threshold <- function(bc.results, sep.threshold) {
+    ret <- bc.results$labels
+    ret[is.na(ret)] <- "Unassigned"
+    ret[bc.results$deltas <= sep.threshold] <- "Unassigned"
+    return(ret)
+}
+
+
+get_well_abundances <- function(bc.results, sep.thresholds) {
+    all.labels <- unique(bc.results$labels)
+    all.labels[is.na(all.labels)] <- "Unassigned"
+
     ret <- sapply(sep.thresholds, function(i) {
-        lab <- bc.labels
-        lab[deltas <= i] <- NA
-        lab[is.na(lab)] <- "Unassigned"
-        df <- as.data.frame(table(lab), stringsAsFactors = F)
+        label <- get_assignemnts_at_threshold(bc.results, i)
+        label <- factor(label, levels = all.labels)
+
+        df <- as.data.frame(table(label))
         df <- cbind(df, threshold = i)
+        df$label <- as.character(df$label)
         return(list(df))
     })
+    return(Reduce("rbind", ret))
 }
 
 debarcode <- function(m, bc.channels, bc.key) {
@@ -92,13 +108,20 @@ debarcode <- function(m, bc.channels, bc.key) {
 
 }
 
-bc.res <- debarcode(m, barcode.channels, bc.key)
-m.normed <- normalize_by_pop(m, barcode.channels, bc.res$labels)
-bc.res.normed <- debarcode(m.normed, barcode.channels, bc.key)
+get_sample <- function(m, label, bc.results, sep.threshold) {
+    assignments <- get_assignemnts_at_threshold(bc.results, sep.threshold)
+    sel.rows <- assignments == label
 
-get_well_abundances(bc.res.normed$deltas, bc.res.normed$labels, seq(0, 1, 0.1))
+    return(m[sel.rows,])
+}
 
-Reduce(function(a, b) {return(merge(a, b, all.x = T, all.y = T, by = "lab"))}, ll)
+
+
+#bc.res <- debarcode(m, barcode.channels, bc.key)
+#m.normed <- normalize_by_pop(m, barcode.channels, bc.res$labels)
+#bc.res.normed <- debarcode(m.normed, barcode.channels, bc.key)
+
+#get_well_abundances(bc.res.normed$deltas, bc.res.normed$labels, seq(0, 1, 0.1))
 
 
 
