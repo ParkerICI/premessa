@@ -1,7 +1,8 @@
 
 
 
-plot_barcode_separation <- function(tab) {
+plot_barcode_separation <- function(bc.res) {
+    tab <- get_well_abundances(bc.res, seq(0, 1, 0.05))
     tab <- tab[tab$label != "Unassigned", ]
 
     (p <- ggplot2::ggplot(ggplot2::aes(y = Freq, x = threshold, colour = label, group = label), data = tab)
@@ -12,11 +13,11 @@ plot_barcode_separation <- function(tab) {
     return(p)
 }
 
-plot_barcode_intensities <- function(m, bc.channels) {
+plot_barcode_channels_intensities <- function(m, bc.channels) {
     m <- m[, bc.channels]
     m <- data.frame(m, check.names = F)
     m <- cbind(m, Event = 1:nrow(m))
-    m <- reshape::melt(m, id.vars = "Event")
+    m <- reshape::melt.data.frame(m, id.vars = "Event")
 
     (p <- ggplot2::ggplot(ggplot2::aes(x = Event, y = value, colour = variable), data = m)
         + ggplot2::geom_point()

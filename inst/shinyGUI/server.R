@@ -26,6 +26,30 @@ render_beadremoval_ui <- function(working.directory, ...) {renderUI({
 })}
 
 
+render_debarcoder_ui <- function(working.directory, ...){renderUI({
+    fluidPage(
+        fluidRow(
+            column(4,
+                selectizeInput("debarcoderui_selected_fcs", "Select FCS file",
+                    choices = c("", list.files(working.directory, pattern = "*.fcs$")), multiple = FALSE, width = "100%"),
+                selectizeInput("debarcoderui_selected_key", "Select barcode key",
+                               choices = c("", list.files(working.directory, pattern = "*.csv$")), multiple = FALSE, width = "100%"),
+                numericInput("debarcoderui_separation_threshold", "Minimum separation", value = 0.3, min = 0, max = 1, step = 0.1, width = "100%"),
+                selectizeInput("debarcoderui_plot_type", "Select plot type", multiple = FALSE, width = "100%",
+                    choices = c("Separation", "Event", "Single Biaxial", "All barcode biaxials")),
+                conditionalPanel(
+                    condition <- "input.debarcoderui_plot_type == 'Event'",
+                    selectizeInput("debarcoderui_selected_sample", "Select sample", choices = c(""), multiple = FALSE, width = "100%")
+                )
+            ),
+            column(8,
+                plotOutput("debarcoderui_plot1"),
+                plotOutput("debarcoderui_plot2")
+            )
+        )
+    )
+})}
+
 render_normalizer_ui <- function(working.directory, ...){renderUI({
     #Remove this fluidpage?
     fluidPage(
@@ -90,6 +114,72 @@ shinyServer(function(input, output, session) {
     output$normalizerUI_plot_outputs <- generate_normalizerui_plot_outputs(5)
     output$beadremovalUI <- render_beadremoval_ui(working.directory, input, output, session)
     output$beadremovalUI_plot_outputs <- generate_beadremovalui_plot_outputs(beadremovalui.plots.number)
+    output$debarcoderUI <- render_debarcoder_ui(working.directory, input, output, session)
+
+
+    #debarcoderUI functions
+
+    #debarcoderui.reactive.values <- reactiveValues(bc.results = NULL, data)
+
+    debarcoderui_get_bc_key <- reactive({
+        if(!is.null(input$debarcoderui_selected_key) && input$debarcoderui_selected_key != "")
+            return(read.csv(file.path(working.directory, input$debarcoderui_selected_key), check.names = F, row.names = 1))
+    })
+
+    debarcoderui_get_bc_channels <- reactive({
+        bc.key <- debarcoderui_get_bc_key()
+        m <- debarcoderui_get_exprs()
+
+        if(!is.null(bc.key) && !is.null(m))
+            return(cytofNormalizeR:::get_barcode_channels_names(m, bc.key))
+    })
+
+    debarcoderui_get_exprs <- reactive({
+        if(!is.null(input$debarcoderui_selected_fcs) && input$debarcoderui_selected_fcs != "") {
+            fcs <- flowCore::read.FCS(file.path(working.directory, input$debarcoderui_selected_fcs))
+            m <- flowCore::exprs(fcs)
+            return(asinh(m / 10))
+        }
+    })
+
+    debarcoderui_get_bc_results <- reactive({
+        bc.key <- debarcoderui_get_bc_key()
+        m <- debarcoderui_get_exprs()
+        barcode.channels <- debarcoderui_get_bc_channels()
+
+        if(!is.null(bc.key) && !is.null(m) && !is.null(barcode.channels)) {
+            bc.res <- cytofNormalizeR:::debarcode(m, barcode.channels, bc.key)
+            m.normed <- cytofNormalizeR:::normalize_by_pop(m, barcode.channels, bc.res$labels)
+            bc.res.normed <- cytofNormalizeR:::debarcode(m.normed, barcode.channels, bc.key)
+            all.labels <- unique(bc.res.normed$labels)
+            all.labels <- sort(all.labels[!is.na(all.labels)])
+            updateSelectizeInput(session, "debarcoderui_selected_sample", choices = all.labels)
+            return(bc.res.normed)
+        }
+    })
+
+    output$debarcoderui_plot1 <- renderPlot({
+        bc.res <- debarcoderui_get_bc_results()
+        if(!is.null(bc.res)) {
+            if(input$debarcoderui_plot_type == "Separation")
+                return(cytofNormalizeR:::plot_separation_histogram(bc.res))
+            else if(input$debarcoderui_plot_type == "Event")
+                return(cytofNormalizeR:::plot_barcode_yields(bc.res, input$debarcoderui_separation_threshold))
+        }
+    })
+
+    output$debarcoderui_plot2 <- renderPlot({
+        bc.res <- debarcoderui_get_bc_results()
+        if(!is.null(bc.res)) {
+            if(input$debarcoderui_plot_type == "Separation")
+                return(cytofNormalizeR:::plot_barcode_separation(bc.res))
+            else if(input$debarcoderui_plot_type == "Event") {
+                m <- cytofNormalizeR:::get_sample(debarcoderui_get_exprs(),
+                        input$debarcoderui_selected_sample, bc.res, input$debarcoderui_separation_threshold)
+                return(cytofNormalizeR:::plot_barcode_channels_intensities(m, debarcoderui_get_bc_channels()))
+            }
+        }
+    })
 
     #beadremovalUI functions
 

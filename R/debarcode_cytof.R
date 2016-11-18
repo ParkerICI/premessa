@@ -1,14 +1,5 @@
 # Transformed matrix
 
-m <- exprs(fcs)
-
-#Doble check maybe the deafult cofactor is 10 ??
-m <- asinh(m / 5)
-
-barcode.channels <-  c("(Pd102)Di", "(Pd104)Di", "(Pd105)Di", "(Pd106)Di", "(Pd108)Di", "(Pd110)Di")
-
-bc.key <- read.csv("sample_barcode_key.csv", check.names = F, row.names = 1)
-
 
 
 
@@ -103,7 +94,7 @@ debarcode <- function(m, bc.channels, bc.key) {
     cutoff <- 0
 
     seps <- calculate_bcs_separation(m, bc.channels, expected.positive, cutoff)
-    labels <- get_barcode_label(m, barcode.channels, bc.key, seps$lowest.bc)
+    labels <- get_barcode_label(m, bc.channels, bc.key, seps$lowest.bc)
     return(data.frame(labels, deltas = seps$deltas, stringsAsFactors = F))
 
 }
