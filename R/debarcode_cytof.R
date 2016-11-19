@@ -6,7 +6,8 @@
 get_barcode_channels_names <- function(m, bc.key) {
     masses <- names(bc.key)
     grep.string <- paste(masses, collapse = "|")
-    return(grep(grep.string, colnames(m), value = T))
+    ret <- as.character(grep(grep.string, colnames(m), value = T))
+    return(ret)
 }
 
 
@@ -72,6 +73,21 @@ get_assignemnts_at_threshold <- function(bc.results, sep.threshold) {
     return(ret)
 }
 
+get_mahalanobis_distance <- function(m, bc.res, bc.channels, sep.threshold) {
+    assignments <- get_assignemnts_at_threshold(bc.res, sep.threshold)
+    ret <- numeric(nrow(m))
+
+    for(lab in unique(assignments)) {
+        sel.rows <- assignments == lab
+        temp <- m[sel.rows, bc.channels]
+        cov.m <- cov(temp)
+        #Here we are not taking the sqrt (different from normalizer)
+        mahal <- mahalanobis(temp, colMeans(temp), cov.m)
+        ret[sel.rows] <- mahal
+    }
+    return(ret)
+}
+
 
 get_well_abundances <- function(bc.results, sep.thresholds) {
     all.labels <- unique(bc.results$labels)
@@ -89,7 +105,9 @@ get_well_abundances <- function(bc.results, sep.thresholds) {
     return(Reduce("rbind", ret))
 }
 
-debarcode <- function(m, bc.channels, bc.key) {
+
+#' Debarcodes an individual data matrix
+debarcode_data_matrix <- function(m, bc.channels, bc.key) {
     expected.positive <- 3
     cutoff <- 0
 
@@ -99,12 +117,51 @@ debarcode <- function(m, bc.channels, bc.key) {
 
 }
 
-get_sample <- function(m, label, bc.results, sep.threshold) {
+#' Debarcodes data by doing normalization after preliminary barcode assignemnts
+#'
+
+debarcode_data <- function(m, bc.key) {
+    barcode.channels <- get_barcode_channels_names(m, bc.key)
+
+
+    bc.res <- debarcode_data_matrix(m, barcode.channels, bc.key)
+    m.normed <- normalize_by_pop(m, barcode.channels, bc.res$labels)
+    bc.res.normed <- debarcode_data_matrix(m.normed, barcode.channels, bc.key)
+    return(list(m.normed = m.normed, bc.res.normed = bc.res.normed, bc.channels = barcode.channels))
+
+}
+
+
+#Returns the row indices that select the specific sample
+get_sample_idx <- function(label, bc.results, sep.threshold) {
     assignments <- get_assignemnts_at_threshold(bc.results, sep.threshold)
     sel.rows <- assignments == label
 
-    return(m[sel.rows,])
+    return(sel.rows)
 }
+
+
+#' Main wrapper for the debarcoder pipeline. Takes all the parameters as input
+#' does everything and writes back the FCS files
+
+debarcode_fcs <- function(fcs, bc.key, output.dir, output.basename, sep.threshold) {
+    m <- flowCore::exprs(fcs)
+    m.transformed <- asinh(m / 10)
+
+    res <- debarcode_data(m.transformed, bc.key)
+    assignments <- get_assignemnts_at_threshold(res$bc.res, sep.threshold)
+
+    for(lab in unique(assignments)) {
+        temp <- m[assignments == lab,]
+        out.fcs <- as_flowFrame(temp, fcs)
+        out.fname <- file.path(output.dir, sprintf("%s_%s.fcs", output.basename, lab))
+        flowCore::write.FCS(out.fcs, out.fname)
+
+    }
+
+
+}
+
 
 
 

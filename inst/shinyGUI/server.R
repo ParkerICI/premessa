@@ -36,11 +36,17 @@ render_debarcoder_ui <- function(working.directory, ...){renderUI({
                                choices = c("", list.files(working.directory, pattern = "*.csv$")), multiple = FALSE, width = "100%"),
                 numericInput("debarcoderui_separation_threshold", "Minimum separation", value = 0.3, min = 0, max = 1, step = 0.1, width = "100%"),
                 selectizeInput("debarcoderui_plot_type", "Select plot type", multiple = FALSE, width = "100%",
-                    choices = c("Separation", "Event", "Single Biaxial", "All barcode biaxials")),
+                    choices = c("Separation", "Event", "Single biaxial", "All barcode biaxials")),
                 conditionalPanel(
-                    condition <- "input.debarcoderui_plot_type == 'Event'",
+                    condition <- "input.debarcoderui_plot_type == 'Event' || input.debarcoderui_plot_type == 'Single biaxial'",
                     selectizeInput("debarcoderui_selected_sample", "Select sample", choices = c(""), multiple = FALSE, width = "100%")
-                )
+                ),
+                conditionalPanel(
+                    condition <- "input.debarcoderui_plot_type == 'Single biaxial'",
+                    selectizeInput("debarcoderui_xaxis", "Select x axis", choices = c(""), multiple = FALSE, width = "100%"),
+                    selectizeInput("debarcoderui_yaxis", "Select y axis", choices = c(""), multiple = FALSE, width = "100%")
+                ),
+                actionButton("debarcoderui_save_files", "Save files")
             ),
             column(8,
                 plotOutput("debarcoderui_plot1"),
@@ -104,7 +110,7 @@ generate_beadremovalui_plot_outputs <- function(n) {renderUI({
 })}
 
 shinyServer(function(input, output, session) {
-    options(warn = -1)
+    #options(warn = -1)
     working.directory <- dirname(file.choose())
     normed.dir <- file.path(working.directory, "normed")
     beads.removed.dir <- file.path(normed.dir, "beads_removed")
@@ -126,35 +132,54 @@ shinyServer(function(input, output, session) {
             return(read.csv(file.path(working.directory, input$debarcoderui_selected_key), check.names = F, row.names = 1))
     })
 
+
+    # This may go away
     debarcoderui_get_bc_channels <- reactive({
         bc.key <- debarcoderui_get_bc_key()
         m <- debarcoderui_get_exprs()
 
-        if(!is.null(bc.key) && !is.null(m))
-            return(cytofNormalizeR:::get_barcode_channels_names(m, bc.key))
+        if(!is.null(bc.key) && !is.null(m)) {
+            bc.channels <- cytofNormalizeR:::get_barcode_channels_names(m, bc.key)
+            updateSelectizeInput(session, "debarcoderui_xaxis", choices = bc.channels)
+            updateSelectizeInput(session, "debarcoderui_yaxis", choices = bc.channels)
+            return(bc.channels)
+        }
+    })
+
+    debarcoderui_get_fcs <- reactive({
+        if(!is.null(input$debarcoderui_selected_fcs) && input$debarcoderui_selected_fcs != "")
+            return(flowCore::read.FCS(file.path(working.directory, input$debarcoderui_selected_fcs)))
     })
 
     debarcoderui_get_exprs <- reactive({
-        if(!is.null(input$debarcoderui_selected_fcs) && input$debarcoderui_selected_fcs != "") {
-            fcs <- flowCore::read.FCS(file.path(working.directory, input$debarcoderui_selected_fcs))
-            m <- flowCore::exprs(fcs)
-            return(asinh(m / 10))
-        }
+            fcs <- debarcoderui_get_fcs()
+            if(!is.null(fcs)) {
+                m <- flowCore::exprs(fcs)
+                return(asinh(m / 10))
+            }
     })
+
+    debarcoderui_get_mahalanobis_distance <- reactive({
+        m <- debarcoderui_get_exprs()
+        bc.res <- debarcoderui_get_bc_results()
+        bc.channels <- debarcoderui_get_bc_channels()
+        if(!is.null(m) && !is.null(bc.res) && !is.null(bc.channels))
+            return(cytofNormalizeR:::get_mahalanobis_distance(m, bc.res,
+                    bc.channels, input$debarcoderui_separation_threshold))
+    })
+
 
     debarcoderui_get_bc_results <- reactive({
         bc.key <- debarcoderui_get_bc_key()
         m <- debarcoderui_get_exprs()
-        barcode.channels <- debarcoderui_get_bc_channels()
 
-        if(!is.null(bc.key) && !is.null(m) && !is.null(barcode.channels)) {
-            bc.res <- cytofNormalizeR:::debarcode(m, barcode.channels, bc.key)
-            m.normed <- cytofNormalizeR:::normalize_by_pop(m, barcode.channels, bc.res$labels)
-            bc.res.normed <- cytofNormalizeR:::debarcode(m.normed, barcode.channels, bc.key)
-            all.labels <- unique(bc.res.normed$labels)
+        if(!is.null(bc.key) && !is.null(m)) {
+            res <- cytofNormalizeR:::debarcode_data(m, bc.key)
+
+            all.labels <- unique(res$bc.res.normed$labels)
             all.labels <- sort(all.labels[!is.na(all.labels)])
             updateSelectizeInput(session, "debarcoderui_selected_sample", choices = all.labels)
-            return(bc.res.normed)
+            return(res$bc.res.normed)
         }
     })
 
@@ -163,7 +188,7 @@ shinyServer(function(input, output, session) {
         if(!is.null(bc.res)) {
             if(input$debarcoderui_plot_type == "Separation")
                 return(cytofNormalizeR:::plot_separation_histogram(bc.res))
-            else if(input$debarcoderui_plot_type == "Event")
+            else if(input$debarcoderui_plot_type == "Event" || input$debarcoderui_plot_type == "Single biaxial")
                 return(cytofNormalizeR:::plot_barcode_yields(bc.res, input$debarcoderui_separation_threshold))
         }
     })
@@ -174,11 +199,37 @@ shinyServer(function(input, output, session) {
             if(input$debarcoderui_plot_type == "Separation")
                 return(cytofNormalizeR:::plot_barcode_separation(bc.res))
             else if(input$debarcoderui_plot_type == "Event") {
-                m <- cytofNormalizeR:::get_sample(debarcoderui_get_exprs(),
-                        input$debarcoderui_selected_sample, bc.res, input$debarcoderui_separation_threshold)
-                return(cytofNormalizeR:::plot_barcode_channels_intensities(m, debarcoderui_get_bc_channels()))
+                sel.rows <- cytofNormalizeR:::get_sample_idx(input$debarcoderui_selected_sample,
+                            bc.res, input$debarcoderui_separation_threshold)
+                m <- debarcoderui_get_exprs()
+                return(cytofNormalizeR:::plot_barcode_channels_intensities(m[sel.rows,], debarcoderui_get_bc_channels()))
+            }
+            else if(input$debarcoderui_plot_type == "Single biaxial") {
+                mahal <- debarcoderui_get_mahalanobis_distance()
+                mahal[mahal > 30] <- 30
+                m <- debarcoderui_get_exprs()
+                m <- cbind(m, mahal)
+                sel.rows <- cytofNormalizeR:::get_sample_idx(input$debarcoderui_selected_sample,
+                                bc.res, input$debarcoderui_separation_threshold)
+                m <- m[sel.rows, ]
+                cytofNormalizeR:::plot_color_coded_biaxial(m, input$debarcoderui_xaxis,
+                                    input$debarcoderui_yaxis, "mahal", color.breaks = 1:30)
             }
         }
+    })
+
+
+    observeEvent(input$debarcoderui_save_files, {
+        isolate({
+            fcs <- debarcoderui_get_fcs()
+            bc.key <- debarcoderui_get_bc_key()
+            if(!is.null(fcs) && !is.null(bc.key)) {
+                out.dir <- file.path(working.directory, "debarcoded")
+                dir.create(out.dir, recursive = T)
+                cytofNormalizeR:::debarcode_fcs(fcs, bc.key, out.dir,
+                        tools::file_path_sans_ext(input$debarcoderui_selected_fcs), input$debarcoderui_separation_threshold)
+            }
+        })
     })
 
     #beadremovalUI functions

@@ -19,7 +19,7 @@ hexbin_downsample <- function(m, x.var, y.var, ...) {
     return(m[!duplicated(hex@cID),])
 }
 
-
+#Refactor this to use plot_color_coded_biaxial
 #' Biaxial plot color-coded according to the Mahalanobis distance from the beads population
 #'
 #' @param m The untrasformed matrix of data. Must contain a column named \code{beadDist} containing the
