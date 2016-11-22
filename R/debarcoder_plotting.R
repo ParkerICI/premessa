@@ -80,3 +80,52 @@ plot_barcode_yields <- function(bc.results, sep.threshold) {
 
     return(p)
 }
+
+plot_all_barcode_biaxials <- function(m, bc.channels) {
+    plotlist <- list()
+    m <- m[, bc.channels]
+    m <- data.frame(m)
+
+    for(i in 1:length(bc.channels))
+        for(j in 1:length(bc.channels)) {
+            plot <- ggplot2::ggplot(ggplot2::aes_string(x = names(m)[i], y = names(m)[j]), data = m)
+            if(i <= j) {
+                plot <- plot + ggplot2::geom_point()
+            }
+            else
+                plot <- plot + ggplot2::geom_blank()
+
+            plotlist <- c(plotlist, list(plot))
+        }
+
+    plotlist <- c(plotlist, list(nrow = length(bc.channels)))
+    fun <- get("grid.arrange", asNamespace("gridExtra"))
+    return(do.call(fun, plotlist))
+}
+
+multiplot <- function(..., plotlist = NULL, file, cols = 1, layout = NULL) {
+    plots <- c(list(...), plotlist)
+
+    numPlots = length(plots)
+
+    if (is.null(layout)) {
+        layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                         ncol = cols, nrow = ceiling(numPlots/cols))
+    }
+
+    if (numPlots == 1) {
+        print(plots[[1]])
+
+    } else {
+        grid::grid.newpage()
+        grid::pushViewport(viewport(layout = grid::grid.layout(nrow(layout), ncol(layout))))
+
+        for (i in 1:numPlots) {
+            matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+
+            print(plots[[i]], vp = grid::viewport(layout.pos.row = matchidx$row,
+                                                  layout.pos.col = matchidx$col))
+        }
+    }
+}
+

@@ -188,7 +188,8 @@ shinyServer(function(input, output, session) {
         if(!is.null(bc.res)) {
             if(input$debarcoderui_plot_type == "Separation")
                 return(cytofNormalizeR:::plot_separation_histogram(bc.res))
-            else if(input$debarcoderui_plot_type == "Event" || input$debarcoderui_plot_type == "Single biaxial")
+            else if(input$debarcoderui_plot_type == "Event" || input$debarcoderui_plot_type == "Single biaxial"
+                    || input$debarcoderui_plot_type == "All barcode biaxials")
                 return(cytofNormalizeR:::plot_barcode_yields(bc.res, input$debarcoderui_separation_threshold))
         }
     })
@@ -212,8 +213,13 @@ shinyServer(function(input, output, session) {
                 sel.rows <- cytofNormalizeR:::get_sample_idx(input$debarcoderui_selected_sample,
                                 bc.res, input$debarcoderui_separation_threshold)
                 m <- m[sel.rows, ]
-                cytofNormalizeR:::plot_color_coded_biaxial(m, input$debarcoderui_xaxis,
-                                    input$debarcoderui_yaxis, "mahal", color.breaks = 1:30)
+                return(cytofNormalizeR:::plot_color_coded_biaxial(m, input$debarcoderui_xaxis,
+                                    input$debarcoderui_yaxis, "mahal", color.breaks = 1:30))
+            }
+            else if(input$debarcoderui_plot_type == "All barcode biaxials") {
+                m <- debarcoderui_get_exprs()
+                bc.channels <- debarcoderui_get_bc_channels()
+                return(cytofNormalizeR:::plot_all_barcode_biaxials(m[1:1000,], bc.channels))
             }
         }
     })
