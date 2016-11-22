@@ -83,18 +83,48 @@ plot_barcode_yields <- function(bc.results, sep.threshold) {
 
 plot_all_barcode_biaxials <- function(m, bc.channels) {
     plotlist <- list()
+    mahal.dist <- m[, "mahal.dist"]
     m <- m[, bc.channels]
+    m <- cbind(m , mahal.dist = mahal.dist)
     m <- data.frame(m)
 
     for(i in 1:length(bc.channels))
         for(j in 1:length(bc.channels)) {
-            plot <- ggplot2::ggplot(ggplot2::aes_string(x = names(m)[i], y = names(m)[j]), data = m)
-            if(i <= j) {
-                plot <- plot + ggplot2::geom_point()
+            if(i == j) {
+                # Plot a histogram
+                plot <- (ggplot2::ggplot(ggplot2::aes_string(x = names(m)[i]), data = m)
+                         + ggplot2::geom_histogram()
+                         + ggplot2::scale_x_continuous("")
+                         + ggplot2::scale_y_continuous("")
+                )
+                if(i == 1)
+                    plot <- plot + ggplot2::scale_y_continuous(names(m)[i])
+                if(j == length(bc.channels))
+                    plot <- plot + ggplot2::scale_x_continuous(names(m)[i])
             }
-            else
-                plot <- plot + ggplot2::geom_blank()
-
+            else {
+                # Plot a biaxial
+                plot <- ggplot2::ggplot(ggplot2::aes_string(x = names(m)[j], y = names(m)[i], colour = "mahal.dist"), data = m)
+                if(i > j) {
+                    plot <- plot + ggplot2::geom_point()
+                    plot <- plot + ggplot2::scale_colour_gradientn("", breaks = 0:30, colours = rainbow(3))
+                }
+                else
+                    plot <- (plot + ggplot2::geom_blank()
+                                + ggplot2::theme(panel.grid.major = ggplot2::element_blank(),
+                                    panel.grid.minor = ggplot2::element_blank(),
+                                    panel.border = ggplot2::element_blank(),
+                                    panel.background = ggplot2::element_blank())
+                    )
+                if(j != 1)
+                    plot <- plot + ggplot2::scale_y_continuous("")
+                if(i != length(bc.channels))
+                    plot <- plot + ggplot2::scale_x_continuous("")
+            }
+            plot <- plot + ggplot2::theme(axis.line = ggplot2::element_blank(),
+                                          axis.ticks = ggplot2::element_blank(),
+                                          axis.text = ggplot2::element_blank(),
+                                          legend.position = "none")
             plotlist <- c(plotlist, list(plot))
         }
 
@@ -102,30 +132,3 @@ plot_all_barcode_biaxials <- function(m, bc.channels) {
     fun <- get("grid.arrange", asNamespace("gridExtra"))
     return(do.call(fun, plotlist))
 }
-
-multiplot <- function(..., plotlist = NULL, file, cols = 1, layout = NULL) {
-    plots <- c(list(...), plotlist)
-
-    numPlots = length(plots)
-
-    if (is.null(layout)) {
-        layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
-                         ncol = cols, nrow = ceiling(numPlots/cols))
-    }
-
-    if (numPlots == 1) {
-        print(plots[[1]])
-
-    } else {
-        grid::grid.newpage()
-        grid::pushViewport(viewport(layout = grid::grid.layout(nrow(layout), ncol(layout))))
-
-        for (i in 1:numPlots) {
-            matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
-
-            print(plots[[i]], vp = grid::viewport(layout.pos.row = matchidx$row,
-                                                  layout.pos.col = matchidx$col))
-        }
-    }
-}
-

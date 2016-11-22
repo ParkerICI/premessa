@@ -38,7 +38,7 @@ render_debarcoder_ui <- function(working.directory, ...){renderUI({
                 selectizeInput("debarcoderui_plot_type", "Select plot type", multiple = FALSE, width = "100%",
                     choices = c("Separation", "Event", "Single biaxial", "All barcode biaxials")),
                 conditionalPanel(
-                    condition <- "input.debarcoderui_plot_type == 'Event' || input.debarcoderui_plot_type == 'Single biaxial'",
+                    condition <- "input.debarcoderui_plot_type != 'Separation'",
                     selectizeInput("debarcoderui_selected_sample", "Select sample", choices = c(""), multiple = FALSE, width = "100%")
                 ),
                 conditionalPanel(
@@ -205,21 +205,20 @@ shinyServer(function(input, output, session) {
                 m <- debarcoderui_get_exprs()
                 return(cytofNormalizeR:::plot_barcode_channels_intensities(m[sel.rows,], debarcoderui_get_bc_channels()))
             }
-            else if(input$debarcoderui_plot_type == "Single biaxial") {
+            else {
+                bc.channels <- debarcoderui_get_bc_channels()
                 mahal <- debarcoderui_get_mahalanobis_distance()
                 mahal[mahal > 30] <- 30
                 m <- debarcoderui_get_exprs()
-                m <- cbind(m, mahal)
+                m <- cbind(m, mahal.dist = mahal)
                 sel.rows <- cytofNormalizeR:::get_sample_idx(input$debarcoderui_selected_sample,
                                 bc.res, input$debarcoderui_separation_threshold)
                 m <- m[sel.rows, ]
-                return(cytofNormalizeR:::plot_color_coded_biaxial(m, input$debarcoderui_xaxis,
-                                    input$debarcoderui_yaxis, "mahal", color.breaks = 1:30))
-            }
-            else if(input$debarcoderui_plot_type == "All barcode biaxials") {
-                m <- debarcoderui_get_exprs()
-                bc.channels <- debarcoderui_get_bc_channels()
-                return(cytofNormalizeR:::plot_all_barcode_biaxials(m[1:1000,], bc.channels))
+                if(input$debarcoderui_plot_type == "Single biaxial")
+                    return(cytofNormalizeR:::plot_color_coded_biaxial(m, input$debarcoderui_xaxis,
+                                    input$debarcoderui_yaxis, "mahal.dist", color.breaks = 0:30))
+                else if(input$debarcoderui_plot_type == "All barcode biaxials")
+                    return(cytofNormalizeR:::plot_all_barcode_biaxials(m, bc.channels))
             }
         }
     })
