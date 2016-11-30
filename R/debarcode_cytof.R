@@ -1,8 +1,20 @@
-# Transformed matrix
+#' Loading a barcode key
+#'
+#' @param fname The path of the file containing the barcode key. Please refer to the online documentation
+#'  for a description of the format
+#'
+#' @return Returns a data frame containing the barcode key
+read_barcode_key <- function(fname) {
+    return(read.csv(fname, check.names = F, row.names = 1))
+}
 
-
-
-
+#' Get the names of the barcode channels
+#'
+#' @param m The data matrix, as returned by \code{flowCore::exprs}
+#' @param bc.key The barcode key, as returned by \code{read_barcode_key}
+#'
+#' @return Returns a vector containing the names of the barcode channels. The vector can be used as index
+#'  to select the appropriate columns of \code{m}
 get_barcode_channels_names <- function(m, bc.key) {
     masses <- names(bc.key)
     grep.string <- paste(masses, collapse = "|")
@@ -42,11 +54,23 @@ get_barcode_label <- function(m, bc.channels, bc.key, lowest.bc) {
     return(bc.key[event.key, "label"])
 }
 
-
-#' Rows for which bc.labels is NA are left unnormalized
-normalize_by_pop <- function(m, bc.channels, bc.labels) {
+#' Normalize the barcode channels
+#'
+#' This function uses preliminary barcode assignments to normalize the intensity of the barcode channels
+#'
+#' @param m The data matrix
+#' @param bc.res The debarcoding results to be used as basis for normalization. Data is normalized by grouping
+#'  together all the events assigned to the same barcoded sample. Rows for which \code{is.na(bc.res$labels) == TRUE}
+#'  are left unnormalized
+#'
+#' @return Returns a matrix of normalized data. The ordering of the rows of the input matrix is preserved
+normalize_by_pop <- function(m, bc.res) {
     #This is an ugly way to do this but we need to normalize the matrix
     #in-place in order to preserve the ordering of the rows
+
+    bc.channels <- bc.res$bc.channels
+    bc.labels <- bc.res$labels
+
     for(lab in unique(bc.labels)) {
         if(!is.na(lab)) {
             rr <- bc.labels == lab
@@ -80,7 +104,7 @@ normalize_by_pop <- function(m, bc.channels, bc.labels) {
 #'
 #' @return Returns a character vector containing the sample labels, given the current thresholds.
 #'
-
+#' @export
 get_assignments_at_threshold <- function(bc.results, sep.threshold, mahal.threshold = NULL, mahal.dist = NULL) {
     ret <- bc.results$labels
     ret[is.na(ret)] <- "Unassigned"
@@ -99,7 +123,6 @@ get_assignments_at_threshold <- function(bc.results, sep.threshold, mahal.thresh
 #'
 #' @return Returns a boolean vector with \code{TRUE} corresponding to the desired events
 #'
-
 get_sample_idx <- function(label, bc.results, sep.threshold, mahal.threshold = NULL, mahal.dist = NULL) {
     assignments <- get_assignments_at_threshold(bc.results, sep.threshold, mahal.threshold, mahal.dist)
     sel.rows <- assignments == label
@@ -108,7 +131,18 @@ get_sample_idx <- function(label, bc.results, sep.threshold, mahal.threshold = N
 }
 
 
-# The mahalanobis distance is hard-capped at 30
+#' Calculates the squared Mahalanobis distance from the centroid of the barcoded sample
+#'
+#' @param m The data matrix
+#' @param bc.res The debarcoding results
+#' @param sep.threshold The minimum separation in the intensity of the barcoding channels. Barcode assignments
+#'  are performed based on this threshold. Then the function calculates the Mahalanobis distance between each event
+#'  and the centroid of the debarcoded sample, as assigned using this threshold.
+#'
+#' @return Returns a vector of squared Mahalanobis distances, as calculated by \code{stats::mahalanobis}. The distance
+#'  values are capped at 30
+#'
+#' @export
 get_mahalanobis_distance <- function(m, bc.res, sep.threshold) {
     bc.channels <- bc.res$bc.channels
     assignments <- get_assignments_at_threshold(bc.res, sep.threshold)
@@ -130,7 +164,6 @@ get_mahalanobis_distance <- function(m, bc.res, sep.threshold) {
 #'
 #'
 #' @inheritParams get_assignments_at_threshold
-
 get_well_abundances <- function(bc.results, sep.thresholds, mahal.threshold = NULL, mahal.dist = NULL) {
     all.labels <- unique(bc.results$labels)
     all.labels[is.na(all.labels)] <- "Unassigned"
@@ -148,35 +181,75 @@ get_well_abundances <- function(bc.results, sep.thresholds, mahal.threshold = NU
 }
 
 
-#' Debarcodes an individual data matrix
+#' Debarcodes an individual matrix of data
+#'
+#' @param m The input matrix
+#' @param bc.channels caracter vector. The names of the barcode channels
+#' @param bc.key The barcode key, as return by \code{read_barcode_key}
+#'
+#' @return Returns a list with the following components
+#'  \itemize{
+#'      \item{\code{labels}}{ character vector of length \code{nrow(m)}. The sample assignments}
+#'      \item{\code{deltas}}{ numeric vector of length \code{nrow(m)}. For each event, the separation between the lowest
+#'          barcode channel and the highest non-barcode channel}
+#'      \item{\code{bc.channels}}{ character vector. The name of the barcode channels}
+#'  }
 debarcode_data_matrix <- function(m, bc.channels, bc.key) {
     expected.positive <- 3
     cutoff <- 0
 
     seps <- calculate_bcs_separation(m, bc.channels, expected.positive, cutoff)
     labels <- get_barcode_label(m, bc.channels, bc.key, seps$lowest.bc)
-    return(data.frame(labels, deltas = seps$deltas, stringsAsFactors = F))
+    return(list(labels = labels, deltas = seps$deltas, bc.channels = bc.channels))
 
 }
 
 #' Debarcodes data by doing normalization after preliminary barcode assignemnts
 #'
-
+#' @param m The data matrix
+#' @param bc.key The barcode key, as returned by \code{read_barcode_key}
+#'
+#' @return Returns a list with the following components
+#'  \itemize{
+#'      \item{\code{m.normed}}{ matrix with \code{nrow(m)} rows. The normalized barcode intensities}
+#'      \item{\code{labels}}{ character vector of length \code{nrow(m)}. The sample assignments}
+#'      \item{\code{deltas}}{ numeric vector of length \code{nrow(m)}. For each event, the separation between the lowest
+#'          barcode channel and the highest non-barcode channel}
+#'      \item{\code{bc.channels}}{ character vector. The name of the barcode channels}
+#'  }
+#'
+#' @export
 debarcode_data <- function(m, bc.key) {
     barcode.channels <- get_barcode_channels_names(m, bc.key)
 
 
     bc.res <- debarcode_data_matrix(m, barcode.channels, bc.key)
-    m.normed <- normalize_by_pop(m, barcode.channels, bc.res$labels)
+    m.normed <- normalize_by_pop(m, bc.res)
     bc.res.normed <- debarcode_data_matrix(m.normed, barcode.channels, bc.key)
     return(list(m.normed = m.normed, labels = bc.res.normed$labels,
                 deltas = bc.res.normed$deltas, bc.channels = barcode.channels))
 
 }
 
-#' Main wrapper for the debarcoder pipeline. Takes all the parameters as input
-#' does everything and writes back the FCS files
-
+#' Main wrapper for the debarcoder pipeline.
+#'
+#' Takes all the parameters as input, does everything and writes back the FCS files
+#'
+#' @param fcs The input \code{flowFrame}
+#' @param bc.key The barcode key, as returned by \code{read_barcode_key}
+#' @param output.dir The output directory
+#' @param output.basename The basename of the output files. For each debarcoded sample, the sample label will
+#'  be appended to this basename
+#' @param sep.threshold The minimum seperation between the lowest barcode channel, and the highest non-barcode channel.
+#'  The data will be normalized before doing the assignments, therefore this number will typically be in \code{[0, 1]}
+#' @param mahal.dist.threshold The maximum squared Mahalanobis distance between each event and the centroid
+#'  of the population that event has been assigned to. This is for further filtering the barcode assignments and it is not
+#'  always necessary. Events with distance above this threshold are left unassigned. The distance is capped at 30, therefore
+#'  the default value of this option corresponds to no filtering
+#'
+#' @return For each debarcoded sample, a new FCS file is created in the output directory. Unassigned events are written
+#'  in a separate file
+#' @export
 debarcode_fcs <- function(fcs, bc.key, output.dir, output.basename, sep.threshold, mahal.dist.threshold = 30) {
     m <- flowCore::exprs(fcs)
     m.transformed <- asinh(m / 10)
@@ -197,17 +270,6 @@ debarcode_fcs <- function(fcs, bc.key, output.dir, output.basename, sep.threshol
 
 
 }
-
-
-
-
-#bc.res <- debarcode(m, barcode.channels, bc.key)
-#m.normed <- normalize_by_pop(m, barcode.channels, bc.res$labels)
-#bc.res.normed <- debarcode(m.normed, barcode.channels, bc.key)
-
-#get_well_abundances(bc.res.normed$deltas, bc.res.normed$labels, seq(0, 1, 0.1))
-
-
 
 
 

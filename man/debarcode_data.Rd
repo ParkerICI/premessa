@@ -6,6 +6,21 @@
 \usage{
 debarcode_data(m, bc.key)
 }
+\arguments{
+\item{m}{The data matrix}
+
+\item{bc.key}{The barcode key, as returned by \code{read_barcode_key}}
+}
+\value{
+Returns a list with the following components
+ \itemize{
+     \item{\code{m.normed}}{ matrix with \code{nrow(m)} rows. The normalized barcode intensities}
+     \item{\code{labels}}{ character vector of length \code{nrow(m)}. The sample assignments}
+     \item{\code{deltas}}{ numeric vector of length \code{nrow(m)}. For each event, the separation between the lowest
+         barcode channel and the highest non-barcode channel}
+     \item{\code{bc.channels}}{ character vector. The name of the barcode channels}
+ }
+}
 \description{
 Debarcodes data by doing normalization after preliminary barcode assignemnts
 }

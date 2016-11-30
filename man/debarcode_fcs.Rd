@@ -2,14 +2,34 @@
 % Please edit documentation in R/debarcode_cytof.R
 \name{debarcode_fcs}
 \alias{debarcode_fcs}
-\title{Main wrapper for the debarcoder pipeline. Takes all the parameters as input
-does everything and writes back the FCS files}
+\title{Main wrapper for the debarcoder pipeline.}
 \usage{
 debarcode_fcs(fcs, bc.key, output.dir, output.basename, sep.threshold,
   mahal.dist.threshold = 30)
 }
+\arguments{
+\item{fcs}{The input \code{flowFrame}}
+
+\item{bc.key}{The barcode key, as returned by \code{read_barcode_key}}
+
+\item{output.dir}{The output directory}
+
+\item{output.basename}{The basename of the output files. For each debarcoded sample, the sample label will
+be appended to this basename}
+
+\item{sep.threshold}{The minimum seperation between the lowest barcode channel, and the highest non-barcode channel.
+The data will be normalized before doing the assignments, therefore this number will typically be in \code{[0, 1]}}
+
+\item{mahal.dist.threshold}{The maximum squared Mahalanobis distance between each event and the centroid
+of the population that event has been assigned to. This is for further filtering the barcode assignments and it is not
+always necessary. Events with distance above this threshold are left unassigned. The distance is capped at 30, therefore
+the default value of this option corresponds to no filtering}
+}
+\value{
+For each debarcoded sample, a new FCS file is created in the output directory. Unassigned events are written
+ in a separate file
+}
 \description{
-Main wrapper for the debarcoder pipeline. Takes all the parameters as input
-does everything and writes back the FCS files
+Takes all the parameters as input, does everything and writes back the FCS files
 }
 

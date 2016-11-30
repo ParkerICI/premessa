@@ -2,11 +2,27 @@
 % Please edit documentation in R/debarcode_cytof.R
 \name{debarcode_data_matrix}
 \alias{debarcode_data_matrix}
-\title{Debarcodes an individual data matrix}
+\title{Debarcodes an individual matrix of data}
 \usage{
 debarcode_data_matrix(m, bc.channels, bc.key)
 }
+\arguments{
+\item{m}{The input matrix}
+
+\item{bc.channels}{caracter vector. The names of the barcode channels}
+
+\item{bc.key}{The barcode key, as return by \code{read_barcode_key}}
+}
+\value{
+Returns a list with the following components
+ \itemize{
+     \item{\code{labels}}{ character vector of length \code{nrow(m)}. The sample assignments}
+     \item{\code{deltas}}{ numeric vector of length \code{nrow(m)}. For each event, the separation between the lowest
+         barcode channel and the highest non-barcode channel}
+     \item{\code{bc.channels}}{ character vector. The name of the barcode channels}
+ }
+}
 \description{
-Debarcodes an individual data matrix
+Debarcodes an individual matrix of data
 }
 

@@ -128,7 +128,7 @@ shinyServer(function(input, output, session) {
 
     debarcoderui_get_bc_key <- reactive({
         if(!is.null(input$debarcoderui_selected_key) && input$debarcoderui_selected_key != "")
-            return(read.csv(file.path(working.directory, input$debarcoderui_selected_key), check.names = F, row.names = 1))
+            return(cytofNormalizeR:::read_barcode_key(file.path(working.directory, input$debarcoderui_selected_key)))
     })
 
     debarcoderui_get_fcs <- reactive({

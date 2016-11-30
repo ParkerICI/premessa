@@ -17,8 +17,8 @@ of the beads population}
 \value{
 Returns a list of two \code{flowFrame} objects
 \itemize{
- \item \code{data.fcs} The data without the beads events
- \item \code{beads.fcs} The beads events
+ \item{\code{data.fcs}}{ The data without the beads events}
+ \item{\code{beads.fcs}}{ The beads events}
 }
 }
 \description{

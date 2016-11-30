@@ -2,11 +2,21 @@
 % Please edit documentation in R/debarcode_cytof.R
 \name{normalize_by_pop}
 \alias{normalize_by_pop}
-\title{Rows for which bc.labels is NA are left unnormalized}
+\title{Normalize the barcode channels}
 \usage{
-normalize_by_pop(m, bc.channels, bc.labels)
+normalize_by_pop(m, bc.res)
+}
+\arguments{
+\item{m}{The data matrix}
+
+\item{bc.res}{The debarcoding results to be used as basis for normalization. Data is normalized by grouping
+together all the events assigned to the same barcoded sample. Rows for which \code{is.na(bc.res$labels) == TRUE}
+are left unnormalized}
+}
+\value{
+Returns a matrix of normalized data. The ordering of the rows of the input matrix is preserved
 }
 \description{
-Rows for which bc.labels is NA are left unnormalized
+This function uses preliminary barcode assignments to normalize the intensity of the barcode channels
 }
 

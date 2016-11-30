@@ -30,11 +30,11 @@ compute_bead_slopes <- function(beads.data, baseline, beads.col.names) {
 #'
 #' @return Returns a list with the following components
 #' \itemize{
-#'  \item \code{m.normed} The normalized data matrix
-#'  \item \code{beads.smoothed} A matrix containing the smoothed beads data
-#'  \item \code{beads.normed} A matrix containing the normalized beads data
-#'  \item \code{beads.slopes} A matrix containing the calculated beadlsopes with \code{nrow(beads.slopes) = nrow(beads.data)} and
-#'  two columns: \code{time} and \code{slope}
+#'  \item{\code{m.normed}}{ The normalized data matrix}
+#'  \item{\code{beads.smoothed}}{ A matrix containing the smoothed beads data}
+#'  \item{\code{beads.normed}}{ A matrix containing the normalized beads data}
+#'  \item{\code{beads.slopes}}{ A matrix containing the calculated beadlsopes with \code{nrow(beads.slopes) = nrow(beads.data)} and
+#'  two columns: \code{time} and \code{slope}}
 #' }
 #'
 #'
@@ -161,8 +161,8 @@ get_mahalanobis_distance_from_beads <- function(m, beads.events, beads.cols.name
 #'
 #' @return Returns a list of two \code{flowFrame} objects
 #' \itemize{
-#'  \item \code{data.fcs} The data without the beads events
-#'  \item \code{beads.fcs} The beads events
+#'  \item{\code{data.fcs}}{ The data without the beads events}
+#'  \item{\code{beads.fcs}}{ The beads events}
 #' }
 #'
 #'
