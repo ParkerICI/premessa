@@ -64,9 +64,9 @@ plot_separation_histogram <- function(bc.results) {
 
 }
 
-plot_barcode_yields <- function(bc.results, sep.threshold) {
+plot_barcode_yields <- function(bc.results, sep.threshold, mahal.threshold = NULL, mahal.dist = NULL) {
 
-    tab <- get_well_abundances(bc.results, sep.threshold)
+    tab <- get_well_abundances(bc.results, sep.threshold, mahal.threshold, mahal.dist)
     perc.assigned <- 1 - (tab[tab$label == "Unassigned", "Freq"] / sum(tab$Freq))
     title.string <- sprintf("Barcode yields with current filters: %1.0f%% assigned", perc.assigned * 100)
     tab <- tab[tab$label != "Unassigned", ]

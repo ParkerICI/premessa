@@ -66,15 +66,52 @@ normalize_by_pop <- function(m, bc.channels, bc.labels) {
     return(m)
 }
 
-get_assignemnts_at_threshold <- function(bc.results, sep.threshold) {
+
+#' Assign events to a specific sample
+#'
+#' @param bc.results The debarcoding results returned from \code{debarcode_data}
+#' @param sep.threshold The threshold value for the separation between the positive and negative barcode
+#'  channels. Only events whose separation is greater than this threshold are assigned to the sample
+#' @param mahal.threshold If not \code{NULL} The threshold value for the Mahalanobis distance between each
+#'  event and the centroid of the sample the event has been assigned to. Only events with distance lower
+#'  than this threshold are assigned to the sample.
+#' @param mahal.dist A vector of Mahalnobis distances, as returned by \code{get_mahalanobis_distance}. Only
+#'  used if \code{mahal.threshold} is not \code{NULL}
+#'
+#' @return Returns a character vector containing the sample labels, given the current thresholds.
+#'
+
+get_assignments_at_threshold <- function(bc.results, sep.threshold, mahal.threshold = NULL, mahal.dist = NULL) {
     ret <- bc.results$labels
     ret[is.na(ret)] <- "Unassigned"
     ret[bc.results$deltas <= sep.threshold] <- "Unassigned"
+    if(!is.null(mahal.threshold))
+        ret[mahal.dist > mahal.threshold] <- "Unassigned"
     return(ret)
 }
 
-get_mahalanobis_distance <- function(m, bc.res, bc.channels, sep.threshold) {
-    assignments <- get_assignemnts_at_threshold(bc.res, sep.threshold)
+
+#' Returns the indices of the events corresponding to a given sample label
+#'
+#'
+#' @param label Character string. The desired sample label
+#' @inheritParams get_assignments_at_threshold
+#'
+#' @return Returns a boolean vector with \code{TRUE} corresponding to the desired events
+#'
+
+get_sample_idx <- function(label, bc.results, sep.threshold, mahal.threshold = NULL, mahal.dist = NULL) {
+    assignments <- get_assignments_at_threshold(bc.results, sep.threshold, mahal.threshold, mahal.dist)
+    sel.rows <- assignments == label
+
+    return(sel.rows)
+}
+
+
+# The mahalanobis distance is hard-capped at 30
+get_mahalanobis_distance <- function(m, bc.res, sep.threshold) {
+    bc.channels <- bc.res$bc.channels
+    assignments <- get_assignments_at_threshold(bc.res, sep.threshold)
     ret <- numeric(nrow(m))
 
     for(lab in unique(assignments)) {
@@ -85,16 +122,21 @@ get_mahalanobis_distance <- function(m, bc.res, bc.channels, sep.threshold) {
         mahal <- mahalanobis(temp, colMeans(temp), cov.m)
         ret[sel.rows] <- mahal
     }
+    ret[ret > 30] <- 30
     return(ret)
 }
 
+#' Calculate number of events assigned to each sample
+#'
+#'
+#' @inheritParams get_assignments_at_threshold
 
-get_well_abundances <- function(bc.results, sep.thresholds) {
+get_well_abundances <- function(bc.results, sep.thresholds, mahal.threshold = NULL, mahal.dist = NULL) {
     all.labels <- unique(bc.results$labels)
     all.labels[is.na(all.labels)] <- "Unassigned"
 
     ret <- sapply(sep.thresholds, function(i) {
-        label <- get_assignemnts_at_threshold(bc.results, i)
+        label <- get_assignments_at_threshold(bc.results, i, mahal.threshold, mahal.dist)
         label <- factor(label, levels = all.labels)
 
         df <- as.data.frame(table(label))
@@ -127,29 +169,23 @@ debarcode_data <- function(m, bc.key) {
     bc.res <- debarcode_data_matrix(m, barcode.channels, bc.key)
     m.normed <- normalize_by_pop(m, barcode.channels, bc.res$labels)
     bc.res.normed <- debarcode_data_matrix(m.normed, barcode.channels, bc.key)
-    return(list(m.normed = m.normed, bc.res.normed = bc.res.normed, bc.channels = barcode.channels))
+    return(list(m.normed = m.normed, labels = bc.res.normed$labels,
+                deltas = bc.res.normed$deltas, bc.channels = barcode.channels))
 
 }
-
-
-#Returns the row indices that select the specific sample
-get_sample_idx <- function(label, bc.results, sep.threshold) {
-    assignments <- get_assignemnts_at_threshold(bc.results, sep.threshold)
-    sel.rows <- assignments == label
-
-    return(sel.rows)
-}
-
 
 #' Main wrapper for the debarcoder pipeline. Takes all the parameters as input
 #' does everything and writes back the FCS files
 
-debarcode_fcs <- function(fcs, bc.key, output.dir, output.basename, sep.threshold) {
+debarcode_fcs <- function(fcs, bc.key, output.dir, output.basename, sep.threshold, mahal.dist.threshold = 30) {
     m <- flowCore::exprs(fcs)
     m.transformed <- asinh(m / 10)
 
-    res <- debarcode_data(m.transformed, bc.key)
-    assignments <- get_assignemnts_at_threshold(res$bc.res, sep.threshold)
+
+    bc.res <- debarcode_data(m.transformed, bc.key)
+    mahal.dist <- get_mahalanobis_distance(m.transformed, bc.res, sep.threshold)
+
+    assignments <- get_assignments_at_threshold(bc.res, sep.threshold, mahal.dist.threshold, mahal.dist)
 
     for(lab in unique(assignments)) {
         temp <- m[assignments == lab,]

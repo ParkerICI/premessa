@@ -5,7 +5,8 @@
 \title{Main wrapper for the debarcoder pipeline. Takes all the parameters as input
 does everything and writes back the FCS files}
 \usage{
-debarcode_fcs(fcs, bc.key, output.dir, output.basename, sep.threshold)
+debarcode_fcs(fcs, bc.key, output.dir, output.basename, sep.threshold,
+  mahal.dist.threshold = 30)
 }
 \description{
 Main wrapper for the debarcoder pipeline. Takes all the parameters as input
