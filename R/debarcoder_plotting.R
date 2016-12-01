@@ -8,7 +8,7 @@ plot_single_biaxial <- function(m, x.var, y.var, mahal.dist) {
 
 }
 
-plot_color_coded_biaxial <- function(m, x.var, y.var, color.var, color.breaks) {
+plot_color_coded_biaxial <- function(m, x.var, y.var, color.var, color.breaks = NULL) {
     x.var.idx <- which(colnames(m) == x.var)
     y.var.idx <- which(colnames(m) == y.var)
     color.var.idx <- which(colnames(m) == color.var)
@@ -18,18 +18,20 @@ plot_color_coded_biaxial <- function(m, x.var, y.var, color.var, color.breaks) {
 
     m <- hexbin_downsample(m, x.var.idx, y.var.idx)
 
+    if(is.null(color.breaks))
+        color.breaks <- ggplot2::waiver()
 
     (p <- ggplot2::ggplot(ggplot2::aes_string(x = names(m)[x.var.idx],
                     y =  names(m)[y.var.idx], colour = names(m)[color.var.idx]), data = m)
         + ggplot2::geom_point()
-        + ggplot2::scale_colour_gradientn(color.breaks, colours = rainbow(3))
+        + ggplot2::scale_colour_gradientn(breaks = color.breaks, colours = rainbow(3))
         + ggplot2::theme(legend.position = "top", legend.key.width = ggplot2::unit(0.1, "npc"))
     )
     return(p)
 
 }
 
-plot_barcode_separation <- function(bc.res) {
+plot_barcode_separation <- function(bc.res, sep.threshold = NULL) {
     tab <- get_well_abundances(bc.res, seq(0, 1, 0.05))
     tab <- tab[tab$label != "Unassigned", ]
 
@@ -38,10 +40,38 @@ plot_barcode_separation <- function(bc.res) {
         + ggplot2::scale_x_continuous(breaks = seq(0, 1, 0.1))
     )
 
+    if(!is.null(sep.threshold))
+        p <- p + ggplot2::geom_vline(xintercept = sep.threshold, colour = "red", linetype = 2)
+
     return(p)
 }
 
-plot_barcode_channels_intensities <- function(m, bc.channels) {
+
+plot_barcode_channels_intensities <- function(m, bc.channels, m.normed = NULL) {
+    process_matrix <- function(m, bc.channels, data.type) {
+        m <- m[, bc.channels]
+        m <- data.frame(m, check.names = F)
+        m <- cbind(m, Event = 1:nrow(m))
+        m <- cbind(m, data.type = data.type)
+    }
+
+    m <- process_matrix(m, bc.channels, "Original")
+    if(!is.null(m.normed)) {
+        m.normed <- process_matrix(m.normed, bc.channels, "Rescaled")
+        m <- rbind(m, m.normed)
+    }
+
+    m <- reshape::melt.data.frame(m, id.vars = c("Event", "data.type"))
+
+    (p <- ggplot2::ggplot(ggplot2::aes(x = Event, y = value, colour = variable), data = m)
+        + ggplot2::geom_point()
+        + ggplot2::facet_wrap(~data.type, scales = "free")
+    )
+    return(p)
+}
+
+plot_events <- function(m, bc.channels) {
+
     m <- m[, bc.channels]
     m <- data.frame(m, check.names = F)
     m <- cbind(m, Event = 1:nrow(m))

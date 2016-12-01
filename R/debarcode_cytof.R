@@ -4,6 +4,8 @@
 #'  for a description of the format
 #'
 #' @return Returns a data frame containing the barcode key
+#'
+#' @export
 read_barcode_key <- function(fname) {
     return(read.csv(fname, check.names = F, row.names = 1))
 }
@@ -195,7 +197,10 @@ get_well_abundances <- function(bc.results, sep.thresholds, mahal.threshold = NU
 #'      \item{\code{bc.channels}}{ character vector. The name of the barcode channels}
 #'  }
 debarcode_data_matrix <- function(m, bc.channels, bc.key) {
-    expected.positive <- 3
+    expected.positive <- unique(rowSums(bc.key))
+    if(length(expected.positive) > 1)
+        stop("Barcoding schems with a variable number of positive channels per sample are not currently supported")
+
     cutoff <- 0
 
     seps <- calculate_bcs_separation(m, bc.channels, expected.positive, cutoff)
@@ -267,8 +272,6 @@ debarcode_fcs <- function(fcs, bc.key, output.dir, output.basename, sep.threshol
         flowCore::write.FCS(out.fcs, out.fname)
 
     }
-
-
 }
 
 
