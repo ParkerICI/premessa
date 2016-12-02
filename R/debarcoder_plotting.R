@@ -1,36 +1,11 @@
-
-plot_single_biaxial <- function(m, x.var, y.var, mahal.dist) {
-    x.var.idx <- which(colnames(m) == x.var)
-    y.var.idx <- which(colnames(m) == y.var)
-
-    m <- data.frame(m)
-    m$mahal.dist <- mahal.dist
-
-}
-
-plot_color_coded_biaxial <- function(m, x.var, y.var, color.var, color.breaks = NULL) {
-    x.var.idx <- which(colnames(m) == x.var)
-    y.var.idx <- which(colnames(m) == y.var)
-    color.var.idx <- which(colnames(m) == color.var)
-
-    m <- data.frame(m)
-
-
-    m <- hexbin_downsample(m, x.var.idx, y.var.idx)
-
-    if(is.null(color.breaks))
-        color.breaks <- ggplot2::waiver()
-
-    (p <- ggplot2::ggplot(ggplot2::aes_string(x = names(m)[x.var.idx],
-                    y =  names(m)[y.var.idx], colour = names(m)[color.var.idx]), data = m)
-        + ggplot2::geom_point()
-        + ggplot2::scale_colour_gradientn(breaks = color.breaks, colours = rainbow(3))
-        + ggplot2::theme(legend.position = "top", legend.key.width = ggplot2::unit(0.1, "npc"))
-    )
-    return(p)
-
-}
-
+#' Plotting debarcoded sample yields as a function of the separation threshold
+#'
+#' @param bc.res The debarcoding results to plot
+#' @param sep.threshold If provided, adds a red line corresponding to the separation
+#'  threshold in use
+#'
+#' @return Returns a ggplot object
+#' @export
 plot_barcode_separation <- function(bc.res, sep.threshold = NULL) {
     tab <- get_well_abundances(bc.res, seq(0, 1, 0.05))
     tab <- tab[tab$label != "Unassigned", ]
@@ -46,7 +21,15 @@ plot_barcode_separation <- function(bc.res, sep.threshold = NULL) {
     return(p)
 }
 
-
+#' Plotting barcode channels intensities for individual events
+#'
+#' @param m The data matrix to plot. The value should be \code{asinh} transformed
+#' @param bc.channels The barcode channels names
+#' @param m.normed A matrix of rescaled intensity values. If provided, they are plotted
+#'  next to the values in \code{m}
+#'
+#' @return Returns a ggplot object
+#' @export
 plot_barcode_channels_intensities <- function(m, bc.channels, m.normed = NULL) {
     process_matrix <- function(m, bc.channels, data.type) {
         m <- m[, bc.channels]
@@ -70,19 +53,13 @@ plot_barcode_channels_intensities <- function(m, bc.channels, m.normed = NULL) {
     return(p)
 }
 
-plot_events <- function(m, bc.channels) {
-
-    m <- m[, bc.channels]
-    m <- data.frame(m, check.names = F)
-    m <- cbind(m, Event = 1:nrow(m))
-    m <- reshape::melt.data.frame(m, id.vars = "Event")
-
-    (p <- ggplot2::ggplot(ggplot2::aes(x = Event, y = value, colour = variable), data = m)
-        + ggplot2::geom_point()
-    )
-    return(p)
-}
-
+#' Plotting the distribution of separation values
+#'
+#' @param bc.results The debarcoding results
+#'
+#' @return Returns a ggplot object
+#'
+#' @export
 plot_separation_histogram <- function(bc.results) {
     tab <- data.frame(separation = bc.results$deltas)
 
@@ -94,6 +71,13 @@ plot_separation_histogram <- function(bc.results) {
 
 }
 
+
+#' Plotting sample yields after debarcoding
+#' @inheritParams get_well_abundances
+#'
+#' @return Returns a ggplot2 object
+#'
+#' @export
 plot_barcode_yields <- function(bc.results, sep.threshold, mahal.threshold = NULL, mahal.dist = NULL) {
 
     tab <- get_well_abundances(bc.results, sep.threshold, mahal.threshold, mahal.dist)
@@ -111,6 +95,15 @@ plot_barcode_yields <- function(bc.results, sep.threshold, mahal.threshold = NUL
     return(p)
 }
 
+
+#' Scatteplot matrix of all the barcode channels
+#'
+#' @param m The matrix of data to plot (\code{asinh} transformed)
+#' @param bc.channels The names of the barcode channels
+#'
+#' @return Returns a ggplot2 object
+#'
+#' @export
 plot_all_barcode_biaxials <- function(m, bc.channels) {
     plotlist <- list()
     mahal.dist <- m[, "mahal.dist"]

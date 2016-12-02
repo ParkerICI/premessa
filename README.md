@@ -1,6 +1,8 @@
 # cytofNormalizeR
 
-R implementation of bead normalization for CyTOF data. The idea behind the method is described in [this](https://www.ncbi.nlm.nih.gov/pubmed/23512433) publication. cytofNormalizeR is an R re-implementation of the [original](https://github.com/nolanlab/bead-normalization) normalization software developed for Matlab.
+R implementation of bead normalization for CyTOF data. 
+
+**---> Make sure to have a backup copy of your data before you use the software! <---**
 
 
 # Installation
@@ -44,7 +46,79 @@ This will install the cytofNormalizeR R package together with all the required d
 
 # Usage
 
-**---> Make sure to have a backup copy of your data before you use the software! <---**
+## Starting the GUI and selecting the working directory
+
+You can start the cytofNormalizeR GUI by typing the following commands in your R session
+
+```
+library(cytofNormalizeR)
+cytofNormalizeR.run()
+```
+This will open a new web browser window, which is used for displaying the GUI. Upon starting, a file selection window will also appear from your R session. You should use this window to navigate to the directory containing the data you want to analyze, and select any file in that directory. The directory itself will then become the working directory for the software.
+
+To stop the software simply hit the "ESC" key in your R session.
+
+
+
+## De-barcoding
+
+The idea behind the method is described in [this](https://www.ncbi.nlm.nih.gov/pubmed/25612231) publication. This software represents an R re-implementation of the [original](https://github.com/nolanlab/single-cell-debarcoder) debarcoding software developed for Matlab.
+
+Sample data for testing is available [here](https://github.com/nolanlab/single-cell-debarcoder/tree/master/sample_files) (you only need the *.csv* and *.fcs* files)
+
+Upon launching the GUI you will have access to the following controls:
+
+- *Select FCS file*: the FCS file you want to debarcode. The dropdown menu is populated with the list of FCS files present in the working directory
+- *Select barcode key*: the CSV file containing the barcode key. The dropdown is populated with the list of *.csv* files present in the working directory. Upon selecting both the FCS file and the key, the preliminary debarcoding process will start immediately. After a few seconds a number of diagnostic plots will appear in the right portion of the window (see [below](#plot-types))
+- *Minimum separation*: the minimum seperation between the positive and negative barcode channels that an event needs to have in order to be assigned to a sample. Events where the separation is less than this threshold are left unassigned. This filtering is done after rescaling the intensity of the barcode channels, and therefore the threshold should be a number between 0 and 1
+- *Maximum Mahalanobis distance*: the maximum distance between a single cell event, and the centroid of the sample the event has been assigned to. Events with distance greather than the threshold are left unassigned. The distance is capped at 30, so the default value of this option does not apply a filter based on Mahalanobis distance.
+- *Plot type*: selects the type of plot to be displayed. Please see [below](#plot-types) for a description of the plots. Depending on the plot type, a few additional controls may be displayed:
+  - *Select sample*: select a specific sample for plotting. Sample names are taken from the barcode key
+  - *Select x axis*: select the channel to be displayed on the x axis
+  - *Select y axis*: select the channel to be displayed on the y axis
+- *Save files*: hitting this button will apply the current settings, performed the debarcoding, and save the resulting output files
+
+Assuming the working directory is called *working_directory* and contains an FCS file called *barcoded_data.fcs* and a barcode key called *barcode_key.csv* that defines 3 barcoded populations (A, B, C), the following directories and output files will be created at the end of the debarcoding process:
+
+```
+working_directory
+|--- barcoded_data.fcs
+|--- barcode_key.csv
+|--- debarcoded
+     |--- barcoded_data_A.fcs
+     |--- barcoded_data_B.fcs
+     |--- barcoded_data_C.fcs
+     |--- barcoded_data_Unassigned.fcs
+```
+
+
+
+### Plot types
+
+There are four types of visualization that allow you to inspect the results of the debarcoding process, and choose the optimal seperation and Mahalanobis distance thresholds. Each plot window is subdivided into a top and bottom section, as described below:
+
+- *Separation*
+  - *Top*: A histogram of the separation between the positive and negative barcode channels for all the events
+  - *Bottom*: Barcode yields as a function of the separation threshold. As the threshold increases, the number of cells assigned to each sample decreases, and more events are left unassigned. The currently selected threshold is displayed as a vertical red line.
+- *Event*
+  - *Top*: Bargraph or cell yields for each sample after debarcoding, given the current settings
+  - *Bottom*: Scatterplot showing the barcode channel intensities for each event, ordered on the x axis. The left plot displays the original data, arcsinh transformed. The plot on the right displays the data rescaled between 0 and 1, which is actually used for debarcoding. Both plots only displays data for the selected sample (use the *Select sample* dropdown to pick the active sample)
+- *Single biaxial*
+  - *Top*: Bargraph of cell yields for each sample after debarcoding, given the current settings
+  - *Bottom*: Scatterplot of barcode channel intensities for the selected sample. The channels displayed on the x and y axis are selected using the dropdown menus on the left (*Select x axis*, *Select y axis*). The points are colored according to the Mahalanobis distance from the centroid of the population. The color scale is displayed on top of the graph. The values plotted are arcsinh  transformed.
+- *All barcode biaxials*
+  - *Top*: Bargraph of cell yields for each sample after debarcoding, given the current setting
+  - *Bottom*: a matrix of scatterplots of barcode channel intensities for the selected sample. All possible combinations are displayed, and the channels represented on the rows and columns are identified by the names on the axes of the bottom and left-most plots. The plots on the diagonal display the distribution of intensity values for the corresponding channel
+
+### De-barcoding without the GUI
+
+All the R functions necessary to perform debarcoding can be accessed directly, and documentation is available in the standard R documentation format, accessible through the R session. The main wrapper function that executes the entire procedure is called `debarcode_fcs`. Inspecting the code of this function should give you an idea of what are the steps involved, and which functions perform each one.
+
+## Bead-based normalization
+
+The idea behind the method is described in [this](https://www.ncbi.nlm.nih.gov/pubmed/23512433) publication. This software represents an R re-implementation of the [original](https://github.com/nolanlab/bead-normalization) normalization software developed for Matlab.
+
+Sample data for testing is available [here](https://github.com/nolanlab/bead-normalization/tree/master/sample_data) (only download the FCS in the top level directory, not the contents of the beads and normed sub-folders).
 
 The normalization workflow involves the following steps:
 
@@ -79,25 +153,11 @@ working_directory
 - *A_normalized_removedEevents.fcs*: the events that have been removed from the normalized data based on the Mahalanobis distance cutoff 
 - *A_beads.fcs*: the beads events, as identified by gating
 
-## Starting the GUI and selecting the working directory
-
-Sample data for testing is available [here](https://github.com/nolanlab/bead-normalization/tree/master/sample_data) (only download the FCS in the top level directory, not the contents of the beads and normed sub-folders).
-
-You can start the cytofNormalizeR GUI by typing the following commands in your R session
-
-```
-library(cytofNormalizeR)
-cytofNormalizeR.run()
-```
-This will open a new web browser window, which is used for displaying the GUI. Upon starting, a file selection window will also appear from your R session. You should use this window to navigate to the directory containing the data you want to normalize, and select any file in that directory. The directory itself will then become the working directory for the software.
-
-To stop the software simply hit the "ESC" key in your R session.
-
 The GUI is organized in two tabs:
 - *Normalize data*: used for beads gating and data normalization 
 - *Remove beads*: used for beads removal
 
-## *Normalize data* panel
+### *Normalize data* panel
 
 This panel contains the following controls:
 
@@ -114,7 +174,7 @@ You can cycle back and forth between different files, as the GUI will remember t
 
 If you want to use existing beads files as the baseline for normalization, a file dialog window will pop-up when you hit the *Normalize* button. Use the window to navigate to a directory containing FCS files containing beads events only (for instance the *A_beads.fcs* file in the above example) and select one of the files. The software will then load *all* the files contained in the same directory as the file you selected.
 
-## *Remove beads* panel
+### *Remove beads* panel
 
 This panel has the following controls
 
@@ -132,7 +192,7 @@ During the beads removal step, all the events whose *beadDist* is less or equal 
 
 The plots in the bottom half of the panel help you select an appropriate cutoff. They display all the pairs of beads channels. Beads should appear as a population in the upper right corner (as they will be double-positives for all the channel pairs). The color of the points represent the distance from the beads population. You should choose a cutoff so that most of the bead events are below the cutoff, and most of the non-beads events are above it. The legend for the color scale is located above the plots.
 
-# Differences with the Matlab Normalizer
+### Differences with the Matlab Normalizer
 
 The normalization algorithm is exactly identical to the one used in the original Matlab implementation of the normalizer. The only differences relate to the way the GUI manages the workflow, and to the organization of the output directory structure.
 
