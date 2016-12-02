@@ -66,10 +66,21 @@ render_normalizer_ui <- function(working.directory, ...){renderUI({
                                choices = c("Fluidigm Beads (140,151,153,165,175)", "Beta Beads (139,141,159,169,175)")),
                 selectizeInput("normalizerui_selected_fcs", "Select FCS file",
                             choices = c("", list.files(working.directory, pattern = "*.fcs$")), multiple = FALSE, width = "100%"),
-                selectizeInput("normalizerui_baseline", "Select baseline for normalization", multiple = FALSE, width = "100%",
-                            choices = c("Current files", "Existing folder of beads files")),
+                fluidRow(
+                    column(6,
+                        selectizeInput("normalizerui_baseline", "Select baseline for normalization", multiple = FALSE, width = "100%",
+                            choices = c("Current files", "Existing folder of beads files"))
+                    ),
+                    column(6,
+                        conditionalPanel(
+                            condition <- "input.normalizerui_baseline != 'Current files'",
+                            p("Selected baseline beads folder"),
+                            verbatimTextOutput("normalizerui_dialog1")
+                        )
+                    )
+                ),
                 p("You have gated beads for the following files (Only these files will be normalized):"),
-                verbatimTextOutput("normalizerui_dialog"),
+                verbatimTextOutput("normalizerui_dialog2"),
                 actionButton("normalizerui_identify_beads", "Identify beads"),
                 actionButton("normalizerui_apply_gates_all_files", "Apply current gates to all files"),
                 actionButton("normalizerui_normalize_files", "Normalize")
@@ -252,7 +263,7 @@ shinyServer(function(input, output, session) {
         }
     )
 
-   observeEvent(input$beadremovalui_remove_beads_all_files, {
+    observeEvent(input$beadremovalui_remove_beads_all_files, {
             isolate({
                 dir.create(beads.removed.dir, recursive = T)
                 files.list <- list.files(normed.dir, pattern = "*.fcs$")
@@ -289,8 +300,16 @@ shinyServer(function(input, output, session) {
     #normalizerUI functions
 
     beads.gates <- reactiveValues()
+    normalizerui.baseline.dir <- NULL
 
-    output$normalizerui_dialog <- renderText({
+    output$normalizerui_dialog1 <- renderText({
+        if(!is.null(input$normalizerui_baseline) && length(grep("^Existing", input$normalizerui_baseline)) > 0) {
+            normalizerui.baseline.dir <<- dirname(file.choose())
+            return(normalizerui.baseline.dir)
+        }
+    })
+
+    output$normalizerui_dialog2 <- renderText({
         paste(names(beads.gates), collapse = ", ")
     })
 
@@ -387,8 +406,9 @@ shinyServer(function(input, output, session) {
             beads.type <- get_beads_type()
             baseline <- NULL
             if(length(grep("^Existing", input$normalizerui_baseline)) > 0)
-                baseline <- dirname(file.choose())
-
+                baseline <- normalizerui.baseline.dir
+            print("Baseline is")
+            print(baseline)
             cytofNormalizeR::normalize_folder(working.directory, "normed", beads.gates, beads.type, baseline = baseline)
             updateSelectizeInput(session, input$beadremovalui_selected_fcs,
                                  choices = c("", list.files(normed.dir, pattern = "*normalized.fcs$")))
