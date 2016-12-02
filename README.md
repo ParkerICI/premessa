@@ -12,7 +12,7 @@ R implementation of bead normalization for CyTOF data.
 
 You need to install the devtools package, available from CRAN, and the flowCore package from Bioconductor. The rest of the dependencies for cytofNormalizeR will be automatically installed
 
-#### Devtools
+#### devtools
 
 Open an R session, type the following command and select a CRAN mirror when prompted.
 
@@ -20,7 +20,7 @@ Open an R session, type the following command and select a CRAN mirror when prom
 install.packages("devtools")
 ```
 
-#### FlowCore
+#### flowCore
 
 Open an R session and type the following commands
 
