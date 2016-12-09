@@ -1,6 +1,8 @@
 # cytofNormalizeR
 
-R implementation of bead normalization for CyTOF data. 
+R implementation of bead-based normalization and debarcoding for CyTOF data.
+
+**The software is still under heavy testing and the name will change. Please contact us with bugs/feature requests** 
 
 **---> Make sure to have a backup copy of your data before you use the software! <---**
 
@@ -62,7 +64,7 @@ The software allows you to perform two operations:
 - [Bead-based normalization](#bead-based-normalization): through the *Normalize data* and *Remove beads* tabs
 - [De-barcoding](#de-barcoding): through the *Debarcode data* tab
 
-
+**Important**: if you are performing de-barcoding immediately following normalization, you will have to stop the software and restart it by selecting as working directory the one containing your normalized files.
 
 
 ## Bead-based normalization
