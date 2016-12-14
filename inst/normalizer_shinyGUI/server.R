@@ -273,8 +273,6 @@ shinyServer(function(input, output, session) {
             baseline <- NULL
             if(length(grep("^Existing", input$normalizerui_baseline)) > 0)
                 baseline <- normalizerui.baseline.dir
-            print("Baseline is")
-            print(baseline)
             cytofNormalizeR::normalize_folder(working.directory, "normed", beads.gates, beads.type, baseline = baseline)
             updateSelectizeInput(session, input$beadremovalui_selected_fcs,
                                  choices = c("", list.files(normed.dir, pattern = "*normalized.fcs$")))

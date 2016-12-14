@@ -4,7 +4,7 @@
 \alias{as_flowFrame}
 \title{Convert a matrix to a flowFrame object}
 \usage{
-as_flowFrame(exprs.m, source.flowFrame = NULL)
+as_flowFrame(exprs.m, source.frame = NULL)
 }
 \arguments{
 \item{exprs.m}{The data matrix. Parameter names will be taken from \code{colnames(exprs.m)},
@@ -12,7 +12,8 @@ but see also the description of the \code{source.flowFrame} parameter}
 
 \item{source.flowFrame}{If a flowFrame object is supplied, the function will copy matching names and descriptions
 keywords from it (e.g. $P1S in the \code{source.flowFrame} is copied to $P1S of the new flowFrame etc.). Extra columns present
-in exprs.m are preserved (i.e. if source.flowFrame doesn't contain $P1S the original version is preserved)}
+in exprs.m are preserved (i.e. if source.flowFrame doesn't contain $P1S the original version is preserved).
+A number of extra optional columns (such as \code{$CYT}) will also be copied if present}
 }
 \value{
 Returns a \code{flowFrame} object

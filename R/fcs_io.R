@@ -51,6 +51,25 @@ copy_keywords_name_desc <- function(source.frame, target.frame) {
     return(target.frame)
 }
 
+#' Copy FCS keywords from a source to a target flowFrame object
+#'
+#' @param source.frame The source \code{flowFrame} object
+#' @param target.frame The target \code{flowFrame} object
+#' @param kw.list The list of keywords to copy. The keywords in this list that
+#'  are not present in the \code{source.frame} are ignored
+#'
+#' @return Returns a \code{flowFrame} object
+#'
+copy_keywords <- function(source.frame, target.frame, kw.list) {
+    source.keywords <- flowCore::keyword(source.frame)
+
+    for(kw in kw.list)
+        if(!is.null(source.keywords[[kw]]))
+            flowCore::keyword(target.frame) <- source.keywords[kw]
+
+    return(target.frame)
+}
+
 
 
 #' Convert a matrix to a flowFrame object
@@ -62,18 +81,25 @@ copy_keywords_name_desc <- function(source.frame, target.frame) {
 #' but see also the description of the \code{source.flowFrame} parameter
 #' @param source.flowFrame If a flowFrame object is supplied, the function will copy matching names and descriptions
 #' keywords from it (e.g. $P1S in the \code{source.flowFrame} is copied to $P1S of the new flowFrame etc.). Extra columns present
-#' in exprs.m are preserved (i.e. if source.flowFrame doesn't contain $P1S the original version is preserved)
+#' in exprs.m are preserved (i.e. if source.flowFrame doesn't contain $P1S the original version is preserved).
+#' A number of extra optional columns (such as \code{$CYT}) will also be copied if present
 #'
 #' @return Returns a \code{flowFrame} object
 #'
 #' @export
-as_flowFrame <- function(exprs.m, source.flowFrame = NULL) {
+as_flowFrame <- function(exprs.m, source.frame = NULL) {
     flow.frame <- flowCore::flowFrame(exprs.m)
     flow.frame <- update_flowFrame_keywords(flow.frame, exprs.m)
 
-    if(!is.null(source.flowFrame))
-        flow.frame <- copy_keywords_name_desc(source.flowFrame, flow.frame)
+    if(!is.null(source.frame)) {
+        num.cols <- ncol(flow.frame)
+        kw.list <- paste("$P", 1:num.cols, "S", sep = "")
+        kw.list <- c(kw.list, paste("$P", 1:num.cols, "N", sep = ""))
+        kw.list <- c(kw.list, "$CYT", "$CYTSN", "$DATE", "$FIL", "$BTIM", "$ETIM")
+        flow.frame <- copy_keywords(source.frame, flow.frame, kw.list)
+    }
     return(flow.frame)
 
 }
+
 
