@@ -26,14 +26,28 @@ render_beadremoval_ui <- function(working.directory, ...) {renderUI({
 })}
 
 
-render_debarcoder_ui <- function(working.directory, ...){renderUI({
+render_debarcoder_ui <- function(...){renderUI({
     fluidPage(
         fluidRow(
             column(4,
-                selectizeInput("debarcoderui_selected_fcs", "Select FCS file",
-                    choices = c("", list.files(working.directory, pattern = "*.fcs$")), multiple = FALSE, width = "100%"),
-                selectizeInput("debarcoderui_selected_key", "Select barcode key",
-                               choices = c("", list.files(working.directory, pattern = "*.csv$")), multiple = FALSE, width = "100%"),
+                fluidRow(
+                    column(8,
+                        p("Current barcode key")
+                    ),
+                    column(4,
+                        actionButton("debarcoderui_select_key", "Select key")
+                    )
+                ),
+                verbatimTextOutput("debarcoderui_dialog_selected_key"),
+                fluidRow(
+                    column(8,
+                        p("Current FCS file")
+                    ),
+                    column(4,
+                        actionButton("debarcoderui_select_fcs", "Select FCS")
+                    )
+                ),
+                verbatimTextOutput("debarcoderui_dialog_selected_fcs"),
                 numericInput("debarcoderui_separation_threshold", "Minimum separation", value = 0.3, min = 0, max = 1, step = 0.1, width = "100%"),
                 numericInput("debarcoderui_mahal_dist_threshold", "Maxiumum Mahlanobis distance", value = 30, min = 0, max = 30, step = 1, width = "100%"),
                 selectizeInput("debarcoderui_plot_type", "Select plot type", multiple = FALSE, width = "100%",
@@ -132,19 +146,23 @@ shinyServer(function(input, output, session) {
     output$normalizerUI_plot_outputs <- generate_normalizerui_plot_outputs(5)
     output$beadremovalUI <- render_beadremoval_ui(working.directory, input, output, session)
     output$beadremovalUI_plot_outputs <- generate_beadremovalui_plot_outputs(beadremovalui.plots.number)
-    output$debarcoderUI <- render_debarcoder_ui(working.directory, input, output, session)
+    output$debarcoderUI <- render_debarcoder_ui(input, output, session)
 
 
     #debarcoderUI functions
 
+    debarcoderui.reactive.values <- reactiveValues(bc.key.fname = file.path(system.file(package = "cytofNormalizeR"), "Fluidigm_20plex_barcode_key.csv"),
+                                        fcs.fname = NULL)
+
+
     debarcoderui_get_bc_key <- reactive({
-        if(!is.null(input$debarcoderui_selected_key) && input$debarcoderui_selected_key != "")
-            return(cytofNormalizeR:::read_barcode_key(file.path(working.directory, input$debarcoderui_selected_key)))
+        if(!is.null(debarcoderui.reactive.values$bc.key.fname) && debarcoderui.reactive.values$bc.key.fname != "")
+            return(cytofNormalizeR:::read_barcode_key(debarcoderui.reactive.values$bc.key.fname))
     })
 
     debarcoderui_get_fcs <- reactive({
-        if(!is.null(input$debarcoderui_selected_fcs) && input$debarcoderui_selected_fcs != "")
-            return(flowCore::read.FCS(file.path(working.directory, input$debarcoderui_selected_fcs)))
+        if(!is.null(debarcoderui.reactive.values$fcs.fname) && debarcoderui.reactive.values$fcs.fname != "")
+            return(flowCore::read.FCS(debarcoderui.reactive.values$fcs.fname))
     })
 
     debarcoderui_get_exprs <- reactive({
@@ -180,6 +198,14 @@ shinyServer(function(input, output, session) {
 
             return(res)
         }
+    })
+
+    output$debarcoderui_dialog_selected_key <- renderText({
+        debarcoderui.reactive.values$bc.key.fname
+    })
+
+    output$debarcoderui_dialog_selected_fcs <- renderText({
+        debarcoderui.reactive.values$fcs.fname
     })
 
     output$debarcoderui_plot1 <- renderPlot({
@@ -228,11 +254,24 @@ shinyServer(function(input, output, session) {
             fcs <- debarcoderui_get_fcs()
             bc.key <- debarcoderui_get_bc_key()
             if(!is.null(fcs) && !is.null(bc.key)) {
-                out.dir <- file.path(working.directory, "debarcoded")
+                fcs.fname <- debarcoderui.reactive.values$fcs.fname
+                out.dir <- file.path(dirname(fcs.fname), "debarcoded")
                 dir.create(out.dir, recursive = T)
                 cytofNormalizeR:::debarcode_fcs(fcs, bc.key, out.dir,
-                        tools::file_path_sans_ext(input$debarcoderui_selected_fcs), input$debarcoderui_separation_threshold, input$debarcoderui_mahal_dist_threshold)
+                        tools::file_path_sans_ext(basename(fcs.fname)), input$debarcoderui_separation_threshold, input$debarcoderui_mahal_dist_threshold)
             }
+        })
+    })
+
+    observeEvent(input$debarcoderui_select_key, {
+        isolate({
+            debarcoderui.reactive.values$bc.key.fname <- file.choose()
+        })
+    })
+
+    observeEvent(input$debarcoderui_select_fcs, {
+        isolate({
+            debarcoderui.reactive.values$fcs.fname <- file.choose()
         })
     })
 

@@ -57,7 +57,7 @@ $.extend(gatePlot, {
         data.color = data.color.map(function(d) { return(d == "black" ? 0 : 1); });
         var plotData = convertDataForD3({x: data.x, y: data.y, color: data.color});
         //top; right; bottom; left
-        var margins = [50, 20, 50, 20];
+        var margins = [50, 20, 50, 30];
         var width = 300 - margins[1] - margins[3];
         var height = 350 - margins[0] - margins[2];
 
@@ -80,14 +80,15 @@ $.extend(gatePlot, {
             .append("svg:g")
             .attr("transform", "translate(" + margins[3] + "," + margins[0] + ")");
         
-
+        var xExtent = d3.extent(plotData, function(d) { return(d.x); });
         var xScale = d3.scaleLinear()
             .range([0, width])
-            .domain(d3.extent(plotData, function(d) { return(d.x); })).nice();
+            .domain([xExtent[0] - 0.5, xExtent[1] + 0.5]);
         
+        var yExtent = d3.extent(plotData, function(d) { return(d.y); });
         var yScale = d3.scaleLinear()
             .range([height, 0])
-            .domain(d3.extent(plotData, function(d) { return(d.y); })).nice();
+            .domain([yExtent[0] - 0.5, yExtent[1] + 0.5]);
 
         var xAxisG = svg.append("g")
                     .attr("class", "xAxis")
@@ -137,7 +138,12 @@ $.extend(gatePlot, {
                            (height + margins[0]) + ")")
             .style("text-anchor", "middle")
             .text(data.xAxisName);
-      // (height + margins[0] + 20) + ")")
+        
+        svg.append("text")             
+            .attr("transform", "translate(" + -(margins[3] / 1.5) + ", " + (height / 2)+ ") rotate(-90)")
+            .style("text-anchor", "middle")
+            .text(data.yAxisName);
+
         doPlot(ctx, plotData, xScale, yScale);
 
     }

@@ -44,7 +44,15 @@ get_initial_beads_gates <- function(fcs) {
 
 
 
-
+#' Starts the cytofNormalizeR UI
+#'
+#' Upon starting, a file selection window will appear from your R session. You should use
+#' this window to navigate to the directory containing the data you want to analyze,
+#' and select any file in that directory. The directory itself will then become
+#' the working directory for the software.
+#' To stop the software simply hit the "ESC" key in your R session.
+#'
+#' @param ... Additional arguments to be passed to \code{shiny::runApp}
 #' @export
 cytofNormalizeR.run <- function(...) {
     shiny::runApp(appDir = file.path(system.file(package = "cytofNormalizeR"), "shinyGUI"), ...)

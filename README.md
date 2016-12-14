@@ -162,8 +162,8 @@ Sample data for testing is available [here](https://github.com/nolanlab/single-c
 
 Upon launching the GUI you will have access to the following controls:
 
-- *Select FCS file*: the FCS file you want to debarcode. The dropdown menu is populated with the list of FCS files present in the working directory
-- *Select barcode key*: the CSV file containing the barcode key. The dropdown is populated with the list of *.csv* files present in the working directory. Upon selecting both the FCS file and the key, the preliminary debarcoding process will start immediately. After a few seconds a number of diagnostic plots will appear in the right portion of the window (see [below](#plot-types))
+- *Current barcode key*: the CSV file containing the barcode key. By default the standard Fluidigm Cell-ID 20-Plex Barcoding key is used. If you want to select a different one, press the *Select key* button. 
+- *Current FCS file*: the FCS that is currently being debarcoded. Press the *Select FCS* button to select the FCS file you want to debarcode. Upon selecting both the FCS file and the key, the preliminary debarcoding process will start immediately. After a few seconds a number of diagnostic plots will appear in the right portion of the window (see [below](#plot-types))
 - *Minimum separation*: the minimum seperation between the positive and negative barcode channels that an event needs to have in order to be assigned to a sample. Events where the separation is less than this threshold are left unassigned. This filtering is done after rescaling the intensity of the barcode channels, and therefore the threshold should be a number between 0 and 1
 - *Maximum Mahalanobis distance*: the maximum distance between a single cell event, and the centroid of the sample the event has been assigned to. Events with distance greather than the threshold are left unassigned. The distance is capped at 30, so the default value of this option does not apply a filter based on Mahalanobis distance.
 - *Plot type*: selects the type of plot to be displayed. Please see [below](#plot-types) for a description of the plots. Depending on the plot type, a few additional controls may be displayed:
@@ -172,12 +172,12 @@ Upon launching the GUI you will have access to the following controls:
   - *Select y axis*: select the channel to be displayed on the y axis
 - *Save files*: hitting this button will apply the current settings, performed the debarcoding, and save the resulting output files
 
-Assuming the working directory is called *working_directory* and contains an FCS file called *barcoded_data.fcs* and a barcode key called *barcode_key.csv* that defines 3 barcoded populations (A, B, C), the following directories and output files will be created at the end of the debarcoding process:
+
+Assuming the FCS file *barcoded_data.fcs* is located in the directory *dir*, and the barcode key defines 3 barcoded populations (A, B, C), the following directories and output files will be created at the end of the debarcoding process:
 
 ```
-working_directory
+dir
 |--- barcoded_data.fcs
-|--- barcode_key.csv
 |--- debarcoded
      |--- barcoded_data_A.fcs
      |--- barcoded_data_B.fcs
