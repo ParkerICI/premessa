@@ -23,9 +23,6 @@ shinyUI(
                     uiOutput("beadremovalUI_plot_outputs")
                 )
             )
-        ),
-        tabPanel("Debarcode data",
-            uiOutput("debarcoderUI")
         )
     )
 )

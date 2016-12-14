@@ -46,30 +46,17 @@ This will install the cytofNormalizeR R package together with all the required d
 
 # Usage
 
-## Starting the GUI and selecting the working directory
-
-You can start the cytofNormalizeR GUI by typing the following commands in your R session
-
-```
-library(cytofNormalizeR)
-cytofNormalizeR.run()
-```
-This will open a new web browser window, which is used for displaying the GUI. Upon starting, a file selection window will also appear from your R session. You should use this window to navigate to the directory containing the data you want to analyze, and select any file in that directory. The directory itself will then become the working directory for the software.
-
-To stop the software simply hit the "ESC" key in your R session.
-
 The software allows you to perform two operations:
 - [Bead-based normalization](#bead-based-normalization): through the *Normalize data* and *Remove beads* tabs
 - [De-barcoding](#de-barcoding): through the *Debarcode data* tab
-
-**Important**: if you are performing de-barcoding immediately following normalization, you will have to stop the software and restart it by selecting as working directory the one containing your normalized files.
-
 
 ## Bead-based normalization
 
 The idea behind the method is described in [this](https://www.ncbi.nlm.nih.gov/pubmed/23512433) publication. This software represents an R re-implementation of the [original](https://github.com/nolanlab/bead-normalization) normalization software developed for Matlab.
 
 Sample data for testing is available [here](https://github.com/nolanlab/bead-normalization/tree/master/sample_data) (only download the FCS in the top level directory, not the contents of the beads and normed sub-folders).
+
+## Inputs and outputs
 
 The normalization workflow involves the following steps:
 
@@ -103,6 +90,18 @@ working_directory
 - *A_normalized_beadsremoved.fcs*: the normalized data with the beads events removed
 - *A_normalized_removedEevents.fcs*: the events that have been removed from the normalized data based on the Mahalanobis distance cutoff 
 - *A_beads.fcs*: the beads events, as identified by gating
+
+## Starting the GUI and selecting the working directory
+
+You can start the normalizer GUI by typing the following commands in your R session
+
+```
+library(cytofNormalizeR)
+normalizer_GUI()
+```
+This will open a new web browser window, which is used for displaying the GUI. Upon starting, a file selection window will also appear from your R session. You should use this window to navigate to the directory containing the data you want to analyze, and select any file in that directory. The directory itself will then become the working directory for the software.
+
+To stop the software simply hit the "ESC" key in your R session.
 
 The GUI is organized in two tabs:
 - *Normalize data*: used for beads gating and data normalization 
@@ -159,6 +158,15 @@ You then switch to the beads removal step, once again visualizing the files back
 The idea behind the method is described in [this](https://www.ncbi.nlm.nih.gov/pubmed/25612231) publication. This software represents an R re-implementation of the [original](https://github.com/nolanlab/single-cell-debarcoder) debarcoding software developed for Matlab.
 
 Sample data for testing is available [here](https://github.com/nolanlab/single-cell-debarcoder/tree/master/sample_files) (you only need the *.csv* and *.fcs* files)
+
+### Operation
+
+You can start the debarcoder GUI by typing the following commands in your R session
+
+```
+library(cytofNormalizeR)
+debarcoder_GUI()
+```
 
 Upon launching the GUI you will have access to the following controls:
 

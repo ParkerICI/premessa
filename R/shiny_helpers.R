@@ -44,7 +44,7 @@ get_initial_beads_gates <- function(fcs) {
 
 
 
-#' Starts the cytofNormalizeR UI
+#' Starts the normalizer GUI
 #'
 #' Upon starting, a file selection window will appear from your R session. You should use
 #' this window to navigate to the directory containing the data you want to analyze,
@@ -54,6 +54,18 @@ get_initial_beads_gates <- function(fcs) {
 #'
 #' @param ... Additional arguments to be passed to \code{shiny::runApp}
 #' @export
-cytofNormalizeR.run <- function(...) {
-    shiny::runApp(appDir = file.path(system.file(package = "cytofNormalizeR"), "shinyGUI"), ...)
+normalizer_GUI <- function(...) {
+    shiny::runApp(appDir = file.path(system.file(package = "cytofNormalizeR"), "normalizer_shinyGUI"), ...)
 }
+
+#' Starts the debarcoder GUI
+#'
+#' To stop the software simply hit the "ESC" key in your R session.
+#'
+#' @param ... Additional arguments to be passed to \code{shiny::runApp}
+#' @export
+debarcoder_GUI <- function(...) {
+    shiny::runApp(appDir = file.path(system.file(package = "cytofNormalizeR"), "debarcoder_shinyGUI"), ...)
+}
+
+
