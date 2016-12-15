@@ -65,7 +65,7 @@ remove_beads_from_file <- function(fcs, cutoff, input.fname, out.dir) {
         data.fname <- paste(base.fname, "beadsremoved.fcs", sep = "_")
         beads.fname <- paste(base.fname, "removedEvents.fcs", sep = "_")
 
-        temp <- cytofNormalizeR::remove_beads_from_fcs(fcs, cutoff)
+        temp <- premessa::remove_beads_from_fcs(fcs, cutoff)
         flowCore::write.FCS(temp$data.fcs, file.path(out.dir, data.fname))
         flowCore::write.FCS(temp$beads.fcs, file.path(beads.dir, beads.fname))
     }
@@ -155,16 +155,16 @@ shinyServer(function(input, output, session) {
     observe({
         if(!is.null(input$beadremovalui_selected_fcs) && input$beadremovalui_selected_fcs != "") {
             fcs <- flowCore::read.FCS(file.path(normed.dir, input$beadremovalui_selected_fcs))
-            beads.type <-  cytofNormalizeR:::get_beads_type_from_description(input$beadremovalui_beads_type)
+            beads.type <-  premessa:::get_beads_type_from_description(input$beadremovalui_beads_type)
 
-            beads.cols.names <- cytofNormalizeR:::find_beads_channels_names(fcs, beads.type)
+            beads.cols.names <- premessa:::find_beads_channels_names(fcs, beads.type)
             combs <- rep(beads.cols.names, length.out = beadremovalui.plots.number * 2)
 
             m <- flowCore::exprs(fcs)
 
             lapply(seq(1, length(combs), 2), function(i) {
                 plot.idx <- ceiling(i / 2)
-                plot.output <- cytofNormalizeR:::plot_distance_from_beads(m, combs[i], combs[i + 1])
+                plot.output <- premessa:::plot_distance_from_beads(m, combs[i], combs[i + 1])
                 output[[paste("beadremovalui_plot", plot.idx, sep ="")]] <- renderPlot(plot.output)
             })
         }
@@ -203,7 +203,7 @@ shinyServer(function(input, output, session) {
     get_beads_gates_for_current_file <- reactive({
             if(!input$normalizerui_selected_fcs %in% names(beads.gates)) {
                 fcs <- get_fcs()
-                beads.gates[[input$normalizerui_selected_fcs]] <<- cytofNormalizeR:::get_initial_beads_gates(fcs)
+                beads.gates[[input$normalizerui_selected_fcs]] <<- premessa:::get_initial_beads_gates(fcs)
             }
             beads.gates[[input$normalizerui_selected_fcs]]
     })
@@ -230,7 +230,7 @@ shinyServer(function(input, output, session) {
     })
 
     get_beads_type <- reactive({
-        cytofNormalizeR:::get_beads_type_from_description(input$normalizerui_beads_type)
+        premessa:::get_beads_type_from_description(input$normalizerui_beads_type)
     })
 
 
@@ -238,8 +238,8 @@ shinyServer(function(input, output, session) {
     do_plot_outputs <- function(sel.beads = NULL) {
         fcs <- get_fcs()
         beads.type <- get_beads_type()
-        beads.cols <- cytofNormalizeR:::find_bead_channels(fcs, beads.type)
-        dna.col <- cytofNormalizeR:::find_dna_channel(fcs)
+        beads.cols <- premessa:::find_bead_channels(fcs, beads.type)
+        dna.col <- premessa:::find_dna_channel(fcs)
 
         gates <- isolate({get_beads_gates_for_current_file()})
 
@@ -251,8 +251,8 @@ shinyServer(function(input, output, session) {
         #Needs to be in lapply to work
         #see https://github.com/rstudio/shiny/issues/532
         lapply(1:length(beads.cols), function(i) {
-            xAxisName <- cytofNormalizeR:::get_parameter_name(fcs, beads.cols[i])
-            yAxisName <- cytofNormalizeR:::get_parameter_name(fcs, dna.col)
+            xAxisName <- premessa:::get_parameter_name(fcs, beads.cols[i])
+            yAxisName <- premessa:::get_parameter_name(fcs, dna.col)
 
             output[[paste("normalizerui_gateplot", i, sep ="")]] <- reactive({
                 list(
@@ -287,7 +287,7 @@ shinyServer(function(input, output, session) {
                 title = "Normalizer report",
                 "Normalization started, please wait..."
             ))
-            cytofNormalizeR::normalize_folder(working.directory, "normed", beads.gates, beads.type, baseline = baseline)
+            premessa::normalize_folder(working.directory, "normed", beads.gates, beads.type, baseline = baseline)
             updateSelectizeInput(session, input$beadremovalui_selected_fcs,
                                  choices = c("", list.files(normed.dir, pattern = "*normalized.fcs$")))
             showModal(modalDialog(
@@ -303,14 +303,14 @@ shinyServer(function(input, output, session) {
         isolate({
             fcs <- get_fcs()
             m <- get_exprs()
-            dna.col <- cytofNormalizeR:::find_dna_channel(fcs)
+            dna.col <- premessa:::find_dna_channel(fcs)
 
             gates <- get_beads_gates_for_current_file()
             beads.type <- get_beads_type()
-            beads.cols <- cytofNormalizeR:::find_bead_channels(fcs, beads.type)
-            beads.cols.names <- cytofNormalizeR:::get_parameter_name(fcs, beads.cols)
+            beads.cols <- premessa:::find_bead_channels(fcs, beads.type)
+            beads.cols.names <- premessa:::get_parameter_name(fcs, beads.cols)
 
-            sel <- cytofNormalizeR:::identify_beads(m, gates, beads.cols.names, dna.col)
+            sel <- premessa:::identify_beads(m, gates, beads.cols.names, dna.col)
             do_plot_outputs(sel)
         })
 

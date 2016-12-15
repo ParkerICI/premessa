@@ -1,5 +1,5 @@
 shinyUI(
-    navbarPage("cytofNormalizeR",
+    navbarPage("premessa",
         tabPanel("Normalize data",
             tags$head(tags$script(src = "gate-plot.js")),
             tags$head(tags$script(src = "d3.min.js")),

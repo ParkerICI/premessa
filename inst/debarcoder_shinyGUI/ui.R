@@ -1,5 +1,5 @@
 shinyUI(
-    navbarPage("cytofNormalizeR",
+    navbarPage("premessa",
         tabPanel("Debarcode data",
             uiOutput("debarcoderUI")
         )

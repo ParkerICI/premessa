@@ -1,4 +1,4 @@
-Package: cytofNormalizeR
+Package: premessa
 Type: Package
 Title: R implementation of bead normalization for CyTOF data
 Version: 0.1.0

@@ -1,8 +1,10 @@
-# cytofNormalizeR
+# premessa
 
-R implementation of bead-based normalization and debarcoding for CyTOF data.
+`premessa` is an R package for pre-processing of mass cytometry data, that includes bead-based normalization and debarcoding.
 
-**The software is still under heavy testing and the name will change. Please contact us with bugs/feature requests** 
+Copyright 2016. Parker Institute for Cancer Immunotherapy
+
+**The software is still under heavy testing. Please contact us with bugs/feature requests** 
 
 **---> Make sure to have a backup copy of your data before you use the software! <---**
 
@@ -12,7 +14,7 @@ R implementation of bead-based normalization and debarcoding for CyTOF data.
 
 ## Install required R packages
 
-You need to install the devtools package, available from CRAN, and the flowCore package from Bioconductor. The rest of the dependencies for cytofNormalizeR will be automatically installed
+You need to install the devtools package, available from CRAN, and the flowCore package from Bioconductor. The rest of the dependencies for premessa will be automatically installed
 
 #### devtools
 
@@ -31,17 +33,17 @@ source("http://bioconductor.org/biocLite.R")
 biocLite("flowCore")
 ```
 
-## Install cytofNormalizeR
+## Install premessa
 
 Once you have succesfully completed the steps above, start an R session and type the following commands
 ```
 library(devtools)
-install_github("ParkerICI/cytofNormalizeR")
+install_github("ParkerICI/premessa")
 ```
 
-This will install the cytofNormalizeR R package together with all the required dependencies.
+This will install the premessa R package together with all the required dependencies.
 
-*Note*: the latest version of devtools seems to be occasionally having problems installing dependencies on Windows. If the installation of cytofNormalizeR fails due to a missing package, please install the offending packages manually, using the R *install.packages* function
+*Note*: the latest version of devtools seems to be occasionally having problems installing dependencies on Windows. If the installation of premessa fails due to a missing package, please install the offending packages manually, using the R *install.packages* function
 
 
 # Usage
@@ -96,7 +98,7 @@ working_directory
 You can start the normalizer GUI by typing the following commands in your R session
 
 ```
-library(cytofNormalizeR)
+library(premessa)
 normalizer_GUI()
 ```
 This will open a new web browser window, which is used for displaying the GUI. Upon starting, a file selection window will also appear from your R session. You should use this window to navigate to the directory containing the data you want to analyze, and select any file in that directory. The directory itself will then become the working directory for the software.
@@ -147,7 +149,7 @@ The normalization algorithm is exactly identical to the one used in the original
 
 With the Matlab implementation, when you do gating and beads removal, you process one file at the time, and there is no way to look back at previously analyzed files, for instance for adjusting the gates.
 
-cytofNormalizeR separates the two steps of the workflow. First you setup the gates, moving back and forth between the input files as needed. This is useful if, for instance, you want to use the exact same gates for all the files, because you need to visualize all the data, before you can identify gates that will work across all the files. Once the gates have been setup, all the files are normalized and the results are saved. 
+premessa separates the two steps of the workflow. First you setup the gates, moving back and forth between the input files as needed. This is useful if, for instance, you want to use the exact same gates for all the files, because you need to visualize all the data, before you can identify gates that will work across all the files. Once the gates have been setup, all the files are normalized and the results are saved. 
 
 You then switch to the beads removal step, once again visualizing the files back and forth as needed, until you have selected an appropriate cutoff. You can then either remove beads from a single file, or from all the files simultaneously. Because the intermediate normalization results have been saved, you can repeat the beads removal step if needed.
 
@@ -164,7 +166,7 @@ Sample data for testing is available [here](https://github.com/nolanlab/single-c
 You can start the debarcoder GUI by typing the following commands in your R session
 
 ```
-library(cytofNormalizeR)
+library(premessa)
 debarcoder_GUI()
 ```
 

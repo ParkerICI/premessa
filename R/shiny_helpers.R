@@ -55,7 +55,7 @@ get_initial_beads_gates <- function(fcs) {
 #' @param ... Additional arguments to be passed to \code{shiny::runApp}
 #' @export
 normalizer_GUI <- function(...) {
-    shiny::runApp(appDir = file.path(system.file(package = "cytofNormalizeR"), "normalizer_shinyGUI"), ...)
+    shiny::runApp(appDir = file.path(system.file(package = "premessa"), "normalizer_shinyGUI"), ...)
 }
 
 #' Starts the debarcoder GUI
@@ -65,7 +65,7 @@ normalizer_GUI <- function(...) {
 #' @param ... Additional arguments to be passed to \code{shiny::runApp}
 #' @export
 debarcoder_GUI <- function(...) {
-    shiny::runApp(appDir = file.path(system.file(package = "cytofNormalizeR"), "debarcoder_shinyGUI"), ...)
+    shiny::runApp(appDir = file.path(system.file(package = "premessa"), "debarcoder_shinyGUI"), ...)
 }
 
 

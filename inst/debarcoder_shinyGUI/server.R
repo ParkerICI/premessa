@@ -52,13 +52,13 @@ shinyServer(function(input, output, session) {
 
     #debarcoderUI functions
 
-    debarcoderui.reactive.values <- reactiveValues(bc.key.fname = file.path(system.file(package = "cytofNormalizeR"), "Fluidigm_20plex_barcode_key.csv"),
+    debarcoderui.reactive.values <- reactiveValues(bc.key.fname = file.path(system.file(package = "premessa"), "Fluidigm_20plex_barcode_key.csv"),
                                         fcs.fname = NULL)
 
 
     debarcoderui_get_bc_key <- reactive({
         if(!is.null(debarcoderui.reactive.values$bc.key.fname) && debarcoderui.reactive.values$bc.key.fname != "")
-            return(cytofNormalizeR:::read_barcode_key(debarcoderui.reactive.values$bc.key.fname))
+            return(premessa:::read_barcode_key(debarcoderui.reactive.values$bc.key.fname))
     })
 
     debarcoderui_get_fcs <- reactive({
@@ -78,7 +78,7 @@ shinyServer(function(input, output, session) {
         m <- debarcoderui_get_exprs()
         bc.res <- debarcoderui_get_bc_results()
         if(!is.null(m) && !is.null(bc.res))
-            return(cytofNormalizeR:::get_mahalanobis_distance(m, bc.res,
+            return(premessa:::get_mahalanobis_distance(m, bc.res,
                     input$debarcoderui_separation_threshold))
     })
 
@@ -88,7 +88,7 @@ shinyServer(function(input, output, session) {
         m <- debarcoderui_get_exprs()
 
         if(!is.null(bc.key) && !is.null(m)) {
-            res <- cytofNormalizeR:::debarcode_data(m, bc.key)
+            res <- premessa:::debarcode_data(m, bc.key)
 
             all.labels <- unique(res$labels)
             all.labels <- sort(all.labels[!is.na(all.labels)])
@@ -113,11 +113,11 @@ shinyServer(function(input, output, session) {
         bc.res <- debarcoderui_get_bc_results()
         if(!is.null(bc.res)) {
             if(input$debarcoderui_plot_type == "Separation")
-                return(cytofNormalizeR:::plot_separation_histogram(bc.res))
+                return(premessa:::plot_separation_histogram(bc.res))
             else if(input$debarcoderui_plot_type == "Event" || input$debarcoderui_plot_type == "Single biaxial"
                     || input$debarcoderui_plot_type == "All barcode biaxials") {
                 mahal.dist <- debarcoderui_get_mahalanobis_distance()
-                return(cytofNormalizeR:::plot_barcode_yields(bc.res, input$debarcoderui_separation_threshold,
+                return(premessa:::plot_barcode_yields(bc.res, input$debarcoderui_separation_threshold,
                                             input$debarcoderui_mahal_dist_threshold, mahal.dist))
             }
         }
@@ -127,23 +127,23 @@ shinyServer(function(input, output, session) {
         bc.res <- debarcoderui_get_bc_results()
         if(!is.null(bc.res)) {
             if(input$debarcoderui_plot_type == "Separation")
-                return(cytofNormalizeR:::plot_barcode_separation(bc.res, input$debarcoderui_separation_threshold))
+                return(premessa:::plot_barcode_separation(bc.res, input$debarcoderui_separation_threshold))
             else {
                 m <- debarcoderui_get_exprs()
                 mahal.dist <- debarcoderui_get_mahalanobis_distance()
                 m <- cbind(m, mahal.dist = mahal.dist)
-                sel.rows <- cytofNormalizeR:::get_sample_idx(input$debarcoderui_selected_sample,
+                sel.rows <- premessa:::get_sample_idx(input$debarcoderui_selected_sample,
                             bc.res, input$debarcoderui_separation_threshold, input$debarcoderui_mahal_dist_threshold, mahal.dist)
                 m <- m[sel.rows, ]
 
                 if(input$debarcoderui_plot_type == "Event")
-                    return(cytofNormalizeR:::plot_barcode_channels_intensities(m, bc.res$bc.channels, bc.res$m.normed[sel.rows,]))
+                    return(premessa:::plot_barcode_channels_intensities(m, bc.res$bc.channels, bc.res$m.normed[sel.rows,]))
                 else {
                     if(input$debarcoderui_plot_type == "Single biaxial")
-                        return(cytofNormalizeR:::plot_color_coded_biaxial(m, input$debarcoderui_xaxis,
+                        return(premessa:::plot_color_coded_biaxial(m, input$debarcoderui_xaxis,
                                         input$debarcoderui_yaxis, "mahal.dist"))
                     else if(input$debarcoderui_plot_type == "All barcode biaxials")
-                        return(cytofNormalizeR:::plot_all_barcode_biaxials(m, bc.res$bc.channels))
+                        return(premessa:::plot_all_barcode_biaxials(m, bc.res$bc.channels))
                 }
             }
         }
@@ -162,7 +162,7 @@ shinyServer(function(input, output, session) {
                     title = "Debarcoder report",
                     "Debarcoding started, please wait..."
                 ))
-                cytofNormalizeR:::debarcode_fcs(fcs, bc.key, out.dir,
+                premessa:::debarcode_fcs(fcs, bc.key, out.dir,
                         tools::file_path_sans_ext(basename(fcs.fname)), input$debarcoderui_separation_threshold, input$debarcoderui_mahal_dist_threshold)
                 showModal(modalDialog(
                     title = "Debarcoder report",
