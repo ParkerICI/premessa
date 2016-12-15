@@ -14,7 +14,6 @@ render_beadremoval_ui <- function(working.directory, ...) {renderUI({
                    selectizeInput("beadremovalui_selected_fcs", "Select FCS file",
                                   choices = c("", list.files(file.path(working.directory, "normed"), pattern = "*.fcs$")), multiple = FALSE, width = "100%"),
                    numericInput("beadremovalui_cutoff", "Cutoff for bead removal", value = 0, min = 0, max = 20),
-                   verbatimTextOutput("beadremovalui_dialog"),
                    actionButton("beadremovalui_remove_beads", "Remove beads (current file)"),
                    actionButton("beadremovalui_remove_beads_all_files", "Remove beads (all files)")
 
@@ -104,12 +103,6 @@ shinyServer(function(input, output, session) {
 
     #beadremovalUI functions
 
-    beadremovalui.reactive.values <- reactiveValues(dialog.text = "")
-
-    output$beadremovalui_dialog <- renderText({
-        beadremovalui.reactive.values[["dialog.text"]]
-    })
-
     get_beadremovalui_fcs <- reactive({
         ret <- NULL
 
@@ -123,8 +116,15 @@ shinyServer(function(input, output, session) {
             isolate({
                 fcs <- get_beadremovalui_fcs()
                 dir.create(beads.removed.dir, recursive = T)
+                showModal(modalDialog(
+                    title = "Normalizer report",
+                    "Bead removal started, please wait..."
+                ))
                 remove_beads_from_file(fcs, input$beadremovalui_cutoff, input$beadremovalui_selected_fcs, beads.removed.dir)
-                beadremovalui.reactive.values[["dialog.text"]] <- sprintf("Beads removed from file: %s", input$beadremovalui_selected_fcs)
+                showModal(modalDialog(
+                    title = "Normalizer report",
+                    sprintf("Beads removed from file: %s", input$beadremovalui_selected_fcs)
+                ))
             })
         }
     )
@@ -133,12 +133,21 @@ shinyServer(function(input, output, session) {
             isolate({
                 dir.create(beads.removed.dir, recursive = T)
                 files.list <- list.files(normed.dir, pattern = "*.fcs$")
+                showModal(modalDialog(
+                    title = "Normalizer report",
+                    "Bead removal started, please wait..."
+                ))
                 files.list <- lapply(files.list, function(f.name) {
                     fcs <- flowCore::read.FCS(file.path(normed.dir, f.name))
                     remove_beads_from_file(fcs, input$beadremovalui_cutoff, f.name, beads.removed.dir)
                     return(f.name)
                 })
-                beadremovalui.reactive.values[["dialog.text"]] <- sprintf("Beads removed from files: %s", paste(files.list, collapse = ", "))
+                showModal(modalDialog(
+                    title = "Normalizer report",
+                    p("Beads removed from files:", br(),
+                        lapply(files.list, function(x) list(x, br()))
+                    )
+                ))
             })
         }
     )
@@ -273,9 +282,19 @@ shinyServer(function(input, output, session) {
             baseline <- NULL
             if(length(grep("^Existing", input$normalizerui_baseline)) > 0)
                 baseline <- normalizerui.baseline.dir
+
+            showModal(modalDialog(
+                title = "Normalizer report",
+                "Normalization started, please wait..."
+            ))
             cytofNormalizeR::normalize_folder(working.directory, "normed", beads.gates, beads.type, baseline = baseline)
             updateSelectizeInput(session, input$beadremovalui_selected_fcs,
                                  choices = c("", list.files(normed.dir, pattern = "*normalized.fcs$")))
+            showModal(modalDialog(
+                title = "Normalizer report",
+                sprintf("Normalization complete! The output files are located in %s",
+                        normed.dir)
+            ))
         })
 
     })

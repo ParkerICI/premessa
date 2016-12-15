@@ -116,7 +116,7 @@ This panel contains the following controls:
 - *Select baseline for normalization*: the baseline beads intensities to be used for normalization. You can either use the median beads intensities of the FCS files that you are currently using for normalization (*Current files* option), or the median intensities of an existing set of beads files (*Existing folder of beads files*). If you select the latter a file dialog window will pop-up when you select the option. Use the window to navigate to a directory containing FCS files containing beads events only (for instance the *A_beads.fcs* file in the above example) and select one of the files. The software will then load *all* the files contained in the same directory as the file you selected. The currently selected folder will be displayed in a text box on the right. 
 - *Identify beads*: clicking this button will color in red the events that are recognized as beads events in the gating plots.
 - *Apply current gates to all files*: applies the current gates to all the files.
-- *Normalize*: starts the normalization routine.
+- *Normalize*: starts the normalization routine. When the process is completed a confirmation dialog will appear
 
 The workflow involves cycling through all the files and adjusting the beads gates in the plot, in order to identify the beads. Only events that are included in *all* the beads gates are identified as beads. As detailed in the dialog box that is above the row of buttons, only files for which the gates have been defined will be used as input for normalization.
 
@@ -130,8 +130,8 @@ This panel has the following controls
 - *Select beads type*: same as for the *Normalize data* panel: select the type of normalization beads that have been used for the experiment. 
 - *Select FCS file*: select the FCS file for plotting. The dropdown will contain all the FCS files located in the *normed* sub-folder of the working directory. The plots will appear below the row of buttons. See below for a description of what the plots represent
 - *Cutoff for bead removal*: the Mahalanobis distance cutoff to be used for bead removal (see below).
-- *Remove beads (current file)*: use the current cutoff to remove beads from the currently selected file
-- *Remove beads (all files)*: use the current cutoff to remove beads from all the files in the folder (i.e. all the files that are listed in the *Select FCS file* dropdown).
+- *Remove beads (current file)*: use the current cutoff to remove beads from the currently selected file. When the process is completed a confirmation dialog will appear
+- *Remove beads (all files)*: use the current cutoff to remove beads from all the files in the folder (i.e. all the files that are listed in the *Select FCS file* dropdown). When the process is completed a confirmation dialog will appear
  
 The bead removal procedure is based on the idea of looking at the distance between each event and the centroid of the beads population, and removing all the events that are closer than a given threshold to the beads population, and therefore are likely to represent beads as opposed to true cells.
 

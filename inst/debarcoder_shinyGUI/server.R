@@ -158,8 +158,17 @@ shinyServer(function(input, output, session) {
                 fcs.fname <- debarcoderui.reactive.values$fcs.fname
                 out.dir <- file.path(dirname(fcs.fname), "debarcoded")
                 dir.create(out.dir, recursive = T)
+                showModal(modalDialog(
+                    title = "Debarcoder report",
+                    "Debarcoding started, please wait..."
+                ))
                 cytofNormalizeR:::debarcode_fcs(fcs, bc.key, out.dir,
                         tools::file_path_sans_ext(basename(fcs.fname)), input$debarcoderui_separation_threshold, input$debarcoderui_mahal_dist_threshold)
+                showModal(modalDialog(
+                    title = "Debarcoder report",
+                    sprintf("Debarcoding complete! The output files are located in %s",
+                            out.dir)
+                ))
             }
         })
     })
