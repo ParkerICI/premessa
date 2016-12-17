@@ -35,10 +35,12 @@ biocLite("flowCore")
 
 ## Install premessa
 
-Once you have succesfully completed the steps above, start an R session and type the following commands
+Once you have succesfully completed the steps above, you have to create a Github token by following [these instructions.](https://help.github.com/articles/creating-an-access-token-for-command-line-use/) (This won't be necessary anymore when the repository goes public).
+Copy the token, start an R session and type the following commands, substituing your Github token
+
 ```
 library(devtools)
-install_github("ParkerICI/premessa")
+install_github("ParkerICI/premessa", auth_token = "YOUR TOKEN HERE")
 ```
 
 This will install the premessa R package together with all the required dependencies.
