@@ -64,28 +64,33 @@ get_barcode_label <- function(m, bc.channels, bc.key, lowest.bc) {
 #' @param bc.res The debarcoding results to be used as basis for normalization. Data is normalized by grouping
 #'  together all the events assigned to the same barcoded sample. Rows for which \code{is.na(bc.res$labels) == TRUE}
 #'  are left unnormalized
+#' @param bc.key The barcode key, as returned by \code{read_barcode_key}
 #'
 #' @return Returns a matrix of normalized data. The ordering of the rows of the input matrix is preserved
-normalize_by_pop <- function(m, bc.res) {
+normalize_by_pop <- function(m, bc.res, bc.key) {
     #This is an ugly way to do this but we need to normalize the matrix
     #in-place in order to preserve the ordering of the rows
 
     bc.channels <- bc.res$bc.channels
     bc.labels <- bc.res$labels
 
-    for(lab in unique(bc.labels)) {
-        if(!is.na(lab)) {
-            rr <- bc.labels == lab
 
-            #This is necessary because the comparison with NA's will produce NA's
-            rr[is.na(rr)] <- FALSE
+    for(lab in row.names(bc.key)) {
 
-            cc <- bc.channels
+        rr <- bc.labels == lab
 
-            norm.factor <- apply(m[rr, cc], 2, quantile, probs = 0.95, na.rm = T)
-            #Divides each row by the norm.factor vector
+        #This is necessary because the comparison with NA's will produce NA's
+        rr[is.na(rr)] <- FALSE
+
+        if(any(rr)) {
+            pos.channels <- as.matrix(bc.key[lab, ])[1, ]
+            pos.channels <- bc.channels[pos.channels == 1]
+
+            #Calculates a single normalization value across all the positive channels
+            norm.factor <- quantile(as.vector(m[rr, pos.channels]), probs = 0.95, na.rm = T)
+
             #This produces values that are not strictly in [0, 1]
-            m[rr, cc] <- m[rr, cc] %*% diag(1 / norm.factor)
+            m[rr, bc.channels] <- m[rr, bc.channels] / norm.factor
         }
 
     }
@@ -229,7 +234,7 @@ debarcode_data <- function(m, bc.key) {
 
 
     bc.res <- debarcode_data_matrix(m, barcode.channels, bc.key)
-    m.normed <- normalize_by_pop(m, bc.res)
+    m.normed <- normalize_by_pop(m, bc.res, bc.key)
     bc.res.normed <- debarcode_data_matrix(m.normed, barcode.channels, bc.key)
     return(list(m.normed = m.normed, labels = bc.res.normed$labels,
                 deltas = bc.res.normed$deltas, bc.channels = barcode.channels))

@@ -4,7 +4,7 @@
 \alias{normalize_by_pop}
 \title{Normalize the barcode channels}
 \usage{
-normalize_by_pop(m, bc.res)
+normalize_by_pop(m, bc.res, bc.key)
 }
 \arguments{
 \item{m}{The data matrix}
@@ -12,6 +12,8 @@ normalize_by_pop(m, bc.res)
 \item{bc.res}{The debarcoding results to be used as basis for normalization. Data is normalized by grouping
 together all the events assigned to the same barcoded sample. Rows for which \code{is.na(bc.res$labels) == TRUE}
 are left unnormalized}
+
+\item{bc.key}{The barcode key, as returned by \code{read_barcode_key}}
 }
 \value{
 Returns a matrix of normalized data. The ordering of the rows of the input matrix is preserved
