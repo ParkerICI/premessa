@@ -35,7 +35,8 @@ biocLite("flowCore")
 
 ## Install premessa
 
-Once you have succesfully completed the steps above, start an R session and type the following commands
+Start an R session and type the following commands
+
 ```
 library(devtools)
 install_github("ParkerICI/premessa")
