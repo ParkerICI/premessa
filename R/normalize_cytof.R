@@ -119,7 +119,7 @@ calculate_baseline <- function(wd, beads.type, files.type = c("data", "beads"), 
         }
 
         #The gating is done on transformed data, but we return the untransformed
-        return(m[sel,])
+        return(m[sel, beads.cols.names])
     })
 
     ret <- Reduce("rbind", ret)
