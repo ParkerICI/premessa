@@ -102,7 +102,7 @@ calculate_baseline <- function(wd, beads.type, files.type = c("data", "beads"), 
 
     files.list <- switch(files.type,
         "data" = names(beads.gates),
-        "beads" = list.files(wd, pattern = "*.fcs$")
+        "beads" = list.files(wd, pattern = "*.fcs$", ignore.case = T)
     )
 
     ret <- lapply(files.list, function(f.name) {
