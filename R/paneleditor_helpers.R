@@ -5,7 +5,7 @@ read_parameters <- function(files.list) {
         df <- data.frame(name = as.character(flowCore::parameters(fcs)$name), 
             desc = as.character(flowCore::parameters(fcs)$desc), check.names = F,
             stringsAsFactors = F)
-        names(df) <- gsub("desc", f, names(df))
+        names(df) <- gsub("desc", basename(f), names(df))
         return(df)
 
     })
@@ -30,8 +30,12 @@ rename_fcs <- function(fcs, old.names, new.names) {
     stopifnot(!any(duplicated(names(new.names))))
 
     #this allows the conversion of names
+    #maps old names to new ones
     p.names.map <- names(new.names)
     names(p.names.map) <- names(old.names)
+    
+    #make sure columns are in the right order
+    ret$m <- ret$m[, names(p.names.map)]
 
     colnames(ret$m) <- p.names.map[colnames(ret$m)]
     ret$desc <- new.names[colnames(ret$m)]
@@ -39,10 +43,23 @@ rename_fcs <- function(fcs, old.names, new.names) {
 }
 
 
-process_files <- function(working.dir, old.tab, new.tab) {
+process_files <- function(working.dir, prefix, old.tab, new.tab) {
     for(i in 1:ncol(old.tab)) {
         f.name <- file.path(working.dir, names(old.tab)[i])
-        fcs <- read_fcs(f.names)
+        fcs <- read_fcs(f.name)
+
+        old.names <- old.tab[, i]
+        names(old.names) <- row.names(old.tab)
+
+        new.names <- new.tab[, i]
+        names(new.names) <- row.names(new.tab)
+
+        fcs <- rename_fcs(fcs, old.names, new.names)
+        out.name <- file.path(working.dir, paste(prefix, names(old.tab)[i], sep = "_"))
+        write_fcs(fcs, out.name)
+
+
+        
     }
 
 }

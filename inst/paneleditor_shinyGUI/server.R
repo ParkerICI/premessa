@@ -37,16 +37,18 @@ shinyServer(function(input, output, session) {
    
 
     observe({
-        if(!is.null(input$paneleditorui_process_files &&
+        if(!is.null(input$paneleditorui_process_files) &&
             input$paneleditorui_process_files != 0) {
 
             isolate({
                 df <- rhandsontable::hot_to_r(input$paneleditorui_panel_table)
+                print("FIXMEE")
+                df$remove <- NULL
+                panel.table$remove <- NULL
+                premessa:::process_files(working.directory, "renamed", 
+                    panel.table, df)
 
             })
-            #print(input$paneleditorui_panel_table)
-            #print(input$paneleditorui_panel_table$params$rClass)
-            
         }
     })
 

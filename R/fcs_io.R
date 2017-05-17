@@ -1,10 +1,15 @@
 #Modified from https://github.com/nolanlab/cytofCore
 #Fixes the parameters in the flowFrame, based on information
 #from the corresponding exprs matrix
-update_flowFrame_keywords <- function(flowFrame, exprs.m) {
+#if desc is different from NULL, also sets the parmeter description
+#(i.e. $PnS)
+update_flowFrame_keywords <- function(flowFrame, exprs.m, desc = NULL) {
 
     params <- flowCore::parameters(flowFrame)
     pdata <- flowCore::pData(params)
+
+    if(is.null(desc))
+        desc <- colnames(exprs.m)
 
     for (i in 1:ncol(flowFrame)) {
         s <- paste("$P",i,"S",sep="")
@@ -15,7 +20,7 @@ update_flowFrame_keywords <- function(flowFrame, exprs.m) {
 
         keyval <- list()
 
-        keyval[[s]] <- colnames(exprs.m)[i]
+        keyval[[s]] <- desc[i]
         keyval[[n]] <- colnames(exprs.m)[i]
         keyval[[r]] <- ceiling(max(exprs.m[,i]) - min(exprs.m[,i]))
         keyval[[b]] <- 32
@@ -118,3 +123,14 @@ read_fcs <- function(f.name) {
 }
 
 
+write_fcs <- function(fcs, out.name) {
+    # Drop parameter keywords
+    keys <- fcs$keywords
+    keys <- keys[grep("\\$P[0-9]+.", names(keys), invert = T)]
+    
+    flow.frame <- flowCore::flowFrame(fcs$m)
+    flow.frame <- update_flowFrame_keywords(flow.frame, fcs$m, fcs$desc)
+    flowCore::keyword(flow.frame) <- keys
+    flowCore::write.FCS(flow.frame, out.name)
+
+}
