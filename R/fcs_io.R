@@ -81,7 +81,10 @@ copy_keywords <- function(source.frame, target.frame, kw.list) {
 #' but see also the description of the \code{source.flowFrame} parameter
 #' @param source.flowFrame If a flowFrame object is supplied, the function will copy matching names and descriptions
 #' keywords from it (e.g. $P1S in the \code{source.flowFrame} is copied to $P1S of the new flowFrame etc.). Extra columns present
-#' in exprs.m are preserved (i.e. if source.flowFrame doesn't contain $P1S the original version is preserved).
+#' in exprs.m are preserved (i.e. if source.flowFrame doesn't contain $P1S the original version is preserved). Note that this 
+#' in general only useful in simple use cases where both the data matrix and the \code{flowFrame} represent the same
+#' data, and have the same column ordering, and you are interested in copy things like parameter names and descriptions.
+#' You will probably introduce errors and inconsistencies in the resulting \code{flowFrame} object if that is not the case.
 #' A number of extra optional columns (such as \code{$CYT}) will also be copied if present
 #'
 #' @return Returns a \code{flowFrame} object
