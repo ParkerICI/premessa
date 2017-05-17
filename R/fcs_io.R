@@ -105,4 +105,16 @@ as_flowFrame <- function(exprs.m, source.frame = NULL) {
 
 }
 
+read_fcs <- function(f.name) {
+    fcs <- flowCore::read.FCS(f.name)
+    ret <- list()
+    ret$m <- flowCore::exprs(fcs)
+    p.names <-  as.character(flowCore::parameters(fcs)$name)
+    colnames(ret$m) <- p.names
+    ret$desc <- as.character(flowCore::parameters(fcs)$desc)
+    names(ret$desc) <- p.names
+    ret$keywords <- flowCore::keyword(fcs)
+    return(ret)
+}
+
 

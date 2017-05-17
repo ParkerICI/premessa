@@ -68,4 +68,8 @@ debarcoder_GUI <- function(...) {
     shiny::runApp(appDir = file.path(system.file(package = "premessa"), "debarcoder_shinyGUI"), ...)
 }
 
+#' @export
+paneleditor_GUI <- function(...) {
+    shiny::runApp(appDir = file.path(system.file(package = "premessa"), "paneleditor_shinyGUI"), ...)
+}
 
