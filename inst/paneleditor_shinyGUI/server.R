@@ -17,32 +17,34 @@ render_paneleditor_ui <- function(working.directory, ...) {renderUI({
 })}
 
 
+get_panel_table <- function(files.list) {
+    print("Reading FCS parameters...")
+    panel.table <- premessa:::read_parameters(files.list)
+    print("Done")
+    common.names <- premessa:::get_common_names(panel.table)
+    problem.idx <- premessa:::get_problem_idx(panel.table, common.names)
+    panel.table <- panel.table[, order(colSums(problem.idx), decreasing = T)]
+
+
+    panel.table <- data.frame(common.names, panel.table, check.names = F, stringsAsFactors = F)
+    names(panel.table)[1] <- "Most common name"
+    return(panel.table)
+
+}
+
+
+
 shinyServer(function(input, output, session) {
-    library(rhandsontable)
     working.directory <- "C:/Users/fgherardini/temp/irina/fcs"
 
     output$paneleditorUI <- render_paneleditor_ui(working.directory)
 
 
     files.list <- list.files(working.directory, pattern = "*.fcs", ignore.case = T)
-
     files.list <- file.path(working.directory, files.list)
 
-    print("Reading FCS parameters...")
-    panel.table <- premessa:::read_parameters(files.list)
-    print("Done")
-    common.names <- premessa:::get_common_names(panel.table)
-    #panel.table <- cbind(remove = FALSE, panel.table)
+    panel.table <- get_panel_table(files.list)
 
-
-
-   
-    reactive_values <- reactiveValues(problem_idx = NULL)
-
-    observe({
-        if(!is.null(input$paneleditorui_panel_table))
-            reactive_values$problem_idx <- premessa:::get_problem_idx(hot_to_r(input$paneleditorui_panel_table), common.names)
-    })
 
 
     observe({
@@ -52,8 +54,8 @@ shinyServer(function(input, output, session) {
             isolate({
                 df <- rhandsontable::hot_to_r(input$paneleditorui_panel_table)
                 print("FIXMEE")
-                df$remove <- NULL
-                panel.table$remove <- NULL
+                df$Remove <- NULL
+                panel.table$"Most common name" <- df$"Most common name" <- NULL
                 premessa:::process_files(working.directory, "renamed", 
                     panel.table, df)
 
@@ -64,18 +66,30 @@ shinyServer(function(input, output, session) {
     output$paneleditorui_panel_table <- rhandsontable::renderRHandsontable({
 
         
-        
-        rhandsontable::rhandsontable(panel.table, common_names = common.names) %>%
+        df <- data.frame(Remove = FALSE, panel.table, check.names = F, stringsAsFactors = F)
+
+        hot <- rhandsontable::rhandsontable(df, rowHeaderWidth = 100)
 
 
-        hot_cols(renderer = "
+        hot <- rhandsontable::hot_cols(hot, fixedColumnsLeft = 2, renderer = "
             function(instance, td, row, col, prop, value, cellProperties) {
-                Handsontable.TextCell.renderer.apply(this, arguments)
-                if(instance.params != null && value != instance.params.common_names[row]) {
-                    td.style.background = 'lightpink'
+                if(col == 0)
+                    Handsontable.CheckboxCell.renderer.apply(this, arguments)
+                else {
+                    Handsontable.TextCell.renderer.apply(this, arguments)
+
+                    if(instance.params != null) { 
+                        if(instance.params.data[row][0])
+                            td.style.background = 'lightgrey'
+                        else if(value != instance.params.data[row][1] && col != 0)
+                            td.style.background = 'lightpink'
+                    }
                 }
                 return(td)
             }"
         )
+        hot
     })
 })
+
+

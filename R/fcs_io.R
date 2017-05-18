@@ -87,7 +87,7 @@ copy_keywords <- function(source.frame, target.frame, kw.list) {
 #' @param source.flowFrame If a flowFrame object is supplied, the function will copy matching names and descriptions
 #' keywords from it (e.g. $P1S in the \code{source.flowFrame} is copied to $P1S of the new flowFrame etc.). Extra columns present
 #' in exprs.m are preserved (i.e. if source.flowFrame doesn't contain $P1S the original version is preserved). Note that this 
-#' in general only useful in simple use cases where both the data matrix and the \code{flowFrame} represent the same
+#' in general only useful in simple cases where both the data matrix and the \code{flowFrame} represent the same
 #' data, and have the same column ordering, and you are interested in copy things like parameter names and descriptions.
 #' You will probably introduce errors and inconsistencies in the resulting \code{flowFrame} object if that is not the case.
 #' A number of extra optional columns (such as \code{$CYT}) will also be copied if present
@@ -127,10 +127,18 @@ write_fcs <- function(fcs, out.name) {
     # Drop parameter keywords
     keys <- fcs$keywords
     keys <- keys[grep("\\$P[0-9]+.", names(keys), invert = T)]
-    
+
     flow.frame <- flowCore::flowFrame(fcs$m)
     flow.frame <- update_flowFrame_keywords(flow.frame, fcs$m, fcs$desc)
     flowCore::keyword(flow.frame) <- keys
     flowCore::write.FCS(flow.frame, out.name)
+}
 
+
+#to.remove = names of parameters to remove
+remove_parameters <- function(fcs, to.remove) {
+    ret <- fcs
+    ret$m <- ret$m[, !(colnames(ret$m) %in% to.remove)]
+    ret$desc <- ret$desc[colnames(ret$m)]
+    return(ret)
 }
