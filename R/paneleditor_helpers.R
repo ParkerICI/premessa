@@ -64,9 +64,16 @@ process_files <- function(working.dir, prefix, old.tab, new.tab) {
 
 }
 
-get_most_common_names <- function(tab) {
+get_common_names <- function(tab) {
     ret <- apply(tab, 1, function(x) {
         return(names(sort(table(x))[1]))
     })
     return(as.vector(ret))
 }
+
+get_problem_idx <- function(tab, common.names) {
+    ret <- matrix(nrow = nrow(tab), ncol = ncol(tab), data = 0)
+    ret[tab != common.names] <- 1
+    return(ret)
+}
+
