@@ -47,7 +47,9 @@ rename_fcs <- function(fcs, old.names, new.names) {
 }
 
 #to.remove character vector of parameters to remove
-process_files <- function(working.dir, prefix, old.tab, new.tab, to.remove = NULL) {
+process_files <- function(working.dir, out.dir, old.tab, new.tab, to.remove = NULL) {
+    out.dir <- file.path(working.dir, out.dir)
+    dir.create(out.dir, recursive = T)
     for(i in 1:ncol(old.tab)) {
         f.name <- file.path(working.dir, names(old.tab)[i])
         fcs <- read_fcs(f.name)
@@ -62,21 +64,16 @@ process_files <- function(working.dir, prefix, old.tab, new.tab, to.remove = NUL
         names(new.names) <- row.names(new.tab)
         new.names <- new.names[names(new.names) %in% colnames(fcs$m)]
 
-
-
         fcs <- rename_fcs(fcs, old.names, new.names)
-        out.name <- file.path(working.dir, paste(prefix, names(old.tab)[i], sep = "_"))
+        out.name <- file.path(out.dir, names(old.tab)[i])
         write_fcs(fcs, out.name)
-
-
-        
     }
-
 }
 
 get_common_names <- function(tab) {
     ret <- apply(tab, 1, function(x) {
-        return(names(sort(table(x))[1]))
+        x <- as.character(x)
+        return(names(sort(table(x), decreasing = T)[1]))
     })
     return(as.vector(ret))
 }

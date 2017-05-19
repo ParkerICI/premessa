@@ -4,13 +4,16 @@
 render_paneleditor_ui <- function(working.directory, ...) {renderUI({
     fluidPage(
         fluidRow(
-            column(12,
-                    rhandsontable::rHandsontableOutput("paneleditorui_panel_table")
+            column(6,
+                textInput("paneleditorui_output_folder", label = "Output folder name", value = "renamed")
+            ),
+            column(3,
+                actionButton("paneleditorui_process_files", "Process files")
             )
         ),
         fluidRow(
             column(12,
-                actionButton("paneleditorui_process_files", "Process files")
+                    rhandsontable::rHandsontableOutput("paneleditorui_panel_table")
             )
         )
     )
@@ -29,16 +32,14 @@ get_panel_table <- function(files.list) {
     panel.table <- data.frame(common.names, panel.table, check.names = F, stringsAsFactors = F)
     names(panel.table)[1] <- "Most common name"
     return(panel.table)
-
 }
 
 
 
 shinyServer(function(input, output, session) {
-    working.directory <- "C:/Users/fgherardini/temp/irina/fcs"
+    working.directory <- dirname(file.choose())
 
     output$paneleditorUI <- render_paneleditor_ui(working.directory)
-
 
     files.list <- list.files(working.directory, pattern = "*.fcs", ignore.case = T)
     files.list <- file.path(working.directory, files.list)
@@ -53,24 +54,22 @@ shinyServer(function(input, output, session) {
 
             isolate({
                 df <- rhandsontable::hot_to_r(input$paneleditorui_panel_table)
-                print("FIXMEE")
+                to.remove <- NULL
+                if(any(df$Remove))
+                    to.remove <- row.names(df)[df$Remove]
                 df$Remove <- NULL
                 panel.table$"Most common name" <- df$"Most common name" <- NULL
-                premessa:::process_files(working.directory, "renamed", 
-                    panel.table, df)
+                premessa:::process_files(working.directory, input$paneleditorui_output_folder, 
+                    panel.table, df, to.remove)
 
             })
         }
     })
 
     output$paneleditorui_panel_table <- rhandsontable::renderRHandsontable({
-
-        
         df <- data.frame(Remove = FALSE, panel.table, check.names = F, stringsAsFactors = F)
 
         hot <- rhandsontable::rhandsontable(df, rowHeaderWidth = 100)
-
-
         hot <- rhandsontable::hot_cols(hot, fixedColumnsLeft = 2, renderer = "
             function(instance, td, row, col, prop, value, cellProperties) {
                 if(col == 0)
