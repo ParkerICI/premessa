@@ -78,7 +78,23 @@ This will open a new web browser window, which is used for displaying the GUI. U
 
 To stop the software simply hit the "ESC" key in your R session.
 
-Once the 
+## Usage
+
+Once you have selected the working directory, the software will extract the panel information from all the FCS files contained in the directory. This information is then displayed in a table, where each row corresponds to a different parameter name ($PnN keyword) and each column corresponds to a different file, indicated in the column header. Each cell represents the description string ($PnS keyword) of a specific parameter in a given file. If a parameter is missing from a file, an *NA* is displayed in the corresponding cell.
+
+The table begins with two special columns:
+- *Remove*: if the box is checked the corresponding parameter is removed from all the files, and the row is grayed out
+- *Most common*: this column indicates what is the most common description value for that parameter, across all the files under analysis (i.e. the most common string across the row). Cells whose value differs from the value indicated in this column are displayed with a light pink background.
+
+The table columns are sorted by the number of *problematic* columns, i.e. by the number of pink cells in the column.
+
+Two controls are located at the top of the table
+- *Output folder name*: a text box where you can input the name of the output folder. If this folder does not exist, it will be created as a sub-folder of the current working directory.
+- *Process files*: this button will start file processing. A file will be created in the output folder, with the same name as the original input file. **If a file of the same name exists already, it will be overwritten**. No change is done to the original files.
+
+
+
+
 
 
 

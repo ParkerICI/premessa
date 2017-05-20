@@ -30,7 +30,7 @@ get_panel_table <- function(files.list) {
 
 
     panel.table <- data.frame(common.names, panel.table, check.names = F, stringsAsFactors = F)
-    names(panel.table)[1] <- "Most common name"
+    names(panel.table)[1] <- "Most common"
     return(panel.table)
 }
 
@@ -58,7 +58,7 @@ shinyServer(function(input, output, session) {
                 if(any(df$Remove))
                     to.remove <- row.names(df)[df$Remove]
                 df$Remove <- NULL
-                panel.table$"Most common name" <- df$"Most common name" <- NULL
+                panel.table$"Most common" <- df$"Most common" <- NULL
                 premessa:::process_files(working.directory, input$paneleditorui_output_folder, 
                     panel.table, df, to.remove)
 
