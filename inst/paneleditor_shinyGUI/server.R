@@ -59,8 +59,20 @@ shinyServer(function(input, output, session) {
                     to.remove <- row.names(df)[df$Remove]
                 df$Remove <- NULL
                 panel.table$"Most common" <- df$"Most common" <- NULL
+
+                showModal(modalDialog(
+                    title = "Panel editor report",
+                    "File processing started, please wait..."
+                ))
+
                 premessa:::process_files(working.directory, input$paneleditorui_output_folder, 
                     panel.table, df, to.remove)
+
+                showModal(modalDialog(
+                    title = "Panel editor report",
+                    sprintf("File processing completed. The output files are located in: %s", file.path(working.directory, input$paneleditorui_output_folder))
+                ))
+
 
             })
         }
