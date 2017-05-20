@@ -1,6 +1,6 @@
 # premessa
 
-`premessa` is an R package for pre-processing of mass cytometry data, that includes bead-based normalization and debarcoding.
+`premessa` is an R package for pre-processing of mass cytometry data, that includes panel editing/renaming for FCS files, bead-based normalization and debarcoding.
 
 Copyright 2016. Parker Institute for Cancer Immunotherapy
 
@@ -50,8 +50,37 @@ This will install the premessa R package together with all the required dependen
 # Usage
 
 The software allows you to perform two operations:
-- [Bead-based normalization](#bead-based-normalization): through the *Normalize data* and *Remove beads* tabs
-- [De-barcoding](#de-barcoding): through the *Debarcode data* tab
+- [Panel editing and renaming](#panel-editing-and-renaming)
+- [Bead-based normalization](#bead-based-normalization)
+- [De-barcoding](#de-barcoding)
+
+For each operation there is a separate GUI, and an associated set of R functions that can be called wihtout using the GUI, if desired
+
+## Panel editing and renaming
+
+`premessa` includes a component for editing and renaming the panel of a set of FCS files. This is useful when you need to harmonize panels across a number of files, so that they can be prepared for downstream analysis (most analysis tools expect files that are part of the same analysis to have identical panels).
+
+A few warnings. `premessa` is *opinionated* in the way it handles the information in the FCS panels, and is specifically tailored to handle the most common use case. The FCS file specification is problematic in a lot of ways and most instrument and analysis software packages do not use or interpret the information correctly anyways. There are 3 ways to refer to a channel in an FCS file, by number (e.g. the order in which they appear in the file), by name (e.g. *Dy161Di* ) and by description (e.g. *CD3*). `premessa` uses the name as unique channel identifier for two reasons:
+- it is guaranteed to be unique in a valid FCS file
+- it minimizes the risk of confusion when matching channels between multiple FCS files, as it corresponds to the intuitive notion of matching channels based on their identity instead of their ordering.
+
+The consequence of this choice is that **the ordering of the channels is not preserved during the processing**. Also at present `premessa` only preseves the `name` and `description` parameter keywords (i.e. $PnN and $PnS). All other parameter keywords (e.g. $PnG, $PnL, $PnO etc.) are discarded. Most of these keywords are used incorrectly anyways, but please feel free to open an issue if this is impacting your workflow.
+
+## Starting the GUI and selecting the working directory
+
+You can start the normalizer GUI by typing the following commands in your R session
+
+```
+library(premessa)
+paneleditor_GUI()
+```
+This will open a new web browser window, which is used for displaying the GUI. Upon starting, a file selection window will also appear from your R session. You should use this window to navigate to the directory containing the data you want to analyze, and select any file in that directory. The directory itself will then become the working directory for the software.
+
+To stop the software simply hit the "ESC" key in your R session.
+
+Once the 
+
+
 
 ## Bead-based normalization
 
