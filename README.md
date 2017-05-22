@@ -1,6 +1,6 @@
 # premessa
 
-`premessa` is an R package for pre-processing of mass cytometry data, that includes panel editing/renaming for FCS files, bead-based normalization and debarcoding.
+`premessa` is an R package for pre-processing of flow and mass cytometry data, that includes panel editing/renaming for FCS files, bead-based normalization and debarcoding.
 
 Copyright 2016. Parker Institute for Cancer Immunotherapy
 

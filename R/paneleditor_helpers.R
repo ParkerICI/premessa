@@ -13,8 +13,16 @@ read_parameters <- function(files.list) {
     ret <- Reduce(function(a, b) {
         merge(a, b, by = "name", all.x = T, all.y = T)
     }, ret)
+
+    ret <- lapply(ret,  function(x) {
+        x[is.na(x)] <- "" 
+        return(x)
+    })
+    ret <- data.frame(ret, check.names = F, stringsAsFactors = F)
+
     row.names(ret) <- ret$name
     ret$name <- NULL
+
     return(ret)
 }
 
@@ -80,8 +88,6 @@ get_common_names <- function(tab) {
 
 get_problem_idx <- function(tab, common.names) {
     ret <- tab != common.names
-    ret[is.na(ret)] <- 1
-
     return(ret)
 }
 
