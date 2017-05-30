@@ -29,8 +29,8 @@ get_panel_table <- function(files.list) {
     panel.table <- panel.table[, order(colSums(problem.idx), decreasing = T)]
 
 
-    panel.table <- data.frame(common.names, panel.table, check.names = F, stringsAsFactors = F)
-    names(panel.table)[1] <- "Most common"
+    panel.table <- data.frame(Parameter = row.names(panel.table), common.names, panel.table, check.names = F, stringsAsFactors = F)
+    names(panel.table)[2] <- "Most common"
     return(panel.table)
 }
 
@@ -41,7 +41,7 @@ shinyServer(function(input, output, session) {
 
     output$paneleditorUI <- render_paneleditor_ui(working.directory)
 
-    files.list <- list.files(working.directory, pattern = "*.fcs", ignore.case = T)
+    files.list <- list.files(working.directory, pattern = "*.fcs$", ignore.case = T)
     files.list <- file.path(working.directory, files.list)
 
     panel.table <- get_panel_table(files.list)
@@ -54,10 +54,9 @@ shinyServer(function(input, output, session) {
 
             isolate({
                 df <- rhandsontable::hot_to_r(input$paneleditorui_panel_table)
-                to.remove <- NULL
-                if(any(df$Remove))
-                    to.remove <- row.names(df)[df$Remove]
-                df$Remove <- NULL
+                for(i in 1:ncol(df))
+                    df[, i] <- gsub("NA", NA, df[, i])
+    
                 panel.table$"Most common" <- df$"Most common" <- NULL
 
                 showModal(modalDialog(
@@ -66,7 +65,7 @@ shinyServer(function(input, output, session) {
                 ))
 
                 premessa:::process_files(working.directory, input$paneleditorui_output_folder, 
-                    panel.table, df, to.remove)
+                    df)
 
                 showModal(modalDialog(
                     title = "Panel editor report",
@@ -82,7 +81,7 @@ shinyServer(function(input, output, session) {
         df <- data.frame(Remove = FALSE, panel.table, check.names = F, stringsAsFactors = F)
 
         hot <- rhandsontable::rhandsontable(df, rowHeaderWidth = 100)
-        hot <- rhandsontable::hot_cols(hot, fixedColumnsLeft = 2, renderer = "
+        hot <- rhandsontable::hot_cols(hot, fixedColumnsLeft = 3, renderer = "
             function(instance, td, row, col, prop, value, cellProperties) {
                 if(col == 0)
                     Handsontable.CheckboxCell.renderer.apply(this, arguments)
@@ -92,8 +91,12 @@ shinyServer(function(input, output, session) {
                     if(instance.params != null) { 
                         if(instance.params.data[row][0])
                             td.style.background = 'lightgrey'
-                        else if(value != instance.params.data[row][1] && col != 0)
-                            td.style.background = 'lightpink'
+                        else {
+                            if(value == 'NA')
+                                td.style.background = 'orange'
+                            else if(value != instance.params.data[row][2] && col > 2)
+                                td.style.background = 'lightpink'
+                        }
                     }
                 }
                 return(td)

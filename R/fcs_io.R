@@ -142,3 +142,14 @@ remove_parameters <- function(fcs, to.remove) {
     ret$desc <- ret$desc[colnames(ret$m)]
     return(ret)
 }
+
+
+add_parameter <- function(fcs, v, name, desc) {
+    ret <- fcs
+    ret$m <- cbind(ret$m, v)
+    colnames(ret$m)[ncol(ret$m)] <- name
+
+    ret$desc <- c(ret$desc, desc)
+    names(ret$desc)[length(ret$desc)] <- name
+    return(ret)
+}
