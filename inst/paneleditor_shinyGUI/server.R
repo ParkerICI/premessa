@@ -58,7 +58,7 @@ shinyServer(function(input, output, session) {
                     df[, i] <- gsub("NA", NA, df[, i])
                 df$Remove <- as.logical(df$Remove)
 
-    
+
                 panel.table$"Most common" <- df$"Most common" <- NULL
 
                 showModal(modalDialog(
@@ -66,7 +66,7 @@ shinyServer(function(input, output, session) {
                     "File processing started, please wait..."
                 ))
 
-                premessa:::process_files(working.directory, input$paneleditorui_output_folder, df)
+                premessa:::rename_parameters_in_files(working.directory, input$paneleditorui_output_folder, df)
 
                 showModal(modalDialog(
                     title = "Panel editor report",
@@ -89,7 +89,7 @@ shinyServer(function(input, output, session) {
                 else {
                     Handsontable.TextCell.renderer.apply(this, arguments)
 
-                    if(instance.params != null) { 
+                    if(instance.params != null) {
                         if(instance.params.data[row][0])
                             td.style.background = 'lightgrey'
                         else {
