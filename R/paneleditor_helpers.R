@@ -94,7 +94,6 @@ process_files <- function(working.dir, out.dir, tab) {
     for(i in 3:ncol(tab)) {
         f.name <- file.path(working.dir, names(tab)[i])
         fcs <- read_fcs(f.name)
-
         to.remove <- row.names(tab)[tab$Remove]
         if(length(to.remove) > 0)
             fcs <- remove_parameters(fcs, to.remove)

@@ -3,7 +3,8 @@
 #from the corresponding exprs matrix
 #if desc is different from NULL, also sets the parmeter description
 #(i.e. $PnS)
-update_flowFrame_keywords <- function(flowFrame, exprs.m, desc = NULL) {
+#Set the range from the data or from a fixed value
+update_flowFrame_keywords <- function(flowFrame, exprs.m, desc = NULL, data.range = "data") {
 
     params <- flowCore::parameters(flowFrame)
     pdata <- flowCore::pData(params)
@@ -20,9 +21,18 @@ update_flowFrame_keywords <- function(flowFrame, exprs.m, desc = NULL) {
 
         keyval <- list()
 
-        keyval[[s]] <- desc[i]
+        if(!is.na(desc[i]))
+            keyval[[s]] <- desc[i]
+        
         keyval[[n]] <- colnames(exprs.m)[i]
-        keyval[[r]] <- ceiling(max(exprs.m[,i]) - min(exprs.m[,i]))
+
+        if(data.range == "data")
+            keyval[[r]] <- ceiling(max(exprs.m[,i]) - min(exprs.m[,i]))
+        else if(is.numeric(data.range))
+            keyval[[r]] <- data.range
+        else
+            stop("Invalid data.range parameter")
+
         keyval[[b]] <- 32
         keyval[[e]] <- "0,0"
         flowCore::keyword(flowFrame) <- keyval
@@ -129,7 +139,7 @@ write_fcs <- function(fcs, out.name) {
     keys <- keys[grep("\\$P[0-9]+.", names(keys), invert = T)]
 
     flow.frame <- flowCore::flowFrame(fcs$m)
-    flow.frame <- update_flowFrame_keywords(flow.frame, fcs$m, fcs$desc)
+    flow.frame <- update_flowFrame_keywords(flow.frame, fcs$m, fcs$desc, data.range = 262144)
     flowCore::keyword(flow.frame) <- keys
     flowCore::write.FCS(flow.frame, out.name)
 }

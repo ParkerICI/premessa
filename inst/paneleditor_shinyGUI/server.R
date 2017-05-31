@@ -56,6 +56,8 @@ shinyServer(function(input, output, session) {
                 df <- rhandsontable::hot_to_r(input$paneleditorui_panel_table)
                 for(i in 1:ncol(df))
                     df[, i] <- gsub("NA", NA, df[, i])
+                df$Remove <- as.logical(df$Remove)
+
     
                 panel.table$"Most common" <- df$"Most common" <- NULL
 
@@ -64,8 +66,7 @@ shinyServer(function(input, output, session) {
                     "File processing started, please wait..."
                 ))
 
-                premessa:::process_files(working.directory, input$paneleditorui_output_folder, 
-                    df)
+                premessa:::process_files(working.directory, input$paneleditorui_output_folder, df)
 
                 showModal(modalDialog(
                     title = "Panel editor report",
