@@ -80,17 +80,18 @@ To stop the software simply hit the "ESC" key in your R session.
 
 ## Usage
 
-Once you have selected the working directory, the software will extract the panel information from all the FCS files contained in the directory. This information is then displayed in a table, where each row corresponds to a different parameter name ($PnN keyword) and each column corresponds to a different file, indicated in the column header. Each cell represents the description string ($PnS keyword) of a specific parameter in a given file. If a parameter is missing from a file, an *NA* is displayed in the corresponding cell.
+Once you have selected the working directory, the software will extract the panel information from all the FCS files contained in the directory. This information is then displayed in a table, where each row corresponds to a different parameter name ($PnN keyword), indicated by the row names (leftmost column), and each column corresponds to a different file, indicated in the column header. Each cell represents the description string ($PnS keyword) of a specific parameter in a given file. If a parameter is missing from a file, an *NA* is displayed in the corresponding cell, which will be colored orange.
 
-The table begins with two special columns:
+The table begins with three special columns:
 - *Remove*: if the box is checked the corresponding parameter is removed from all the files, and the row is grayed out
+- *Parameter*: this column represent the parameter name ($PnN keyword). Initially it will be identical to the first column of row names, but this column is editable. You can edit this column if you want to change the parameter names in the output files.
 - *Most common*: this column indicates what is the most common description value for that parameter, across all the files under analysis (i.e. the most common string across the row). Cells whose value differs from the value indicated in this column are displayed with a light pink background.
 
-The table columns are sorted by the number of *problematic* columns, i.e. by the number of pink cells in the column. The first two columns of the table are fixed and always visible when you scroll the table horizontally. Please note that the browser included with the current vesion of RStudio seems to have a problem where the column headers do not scroll correctly. If that is the case, open the application in a regular web browser, by click on the "open browser" button in the top right corner of the RStudio browser.
+The table columns are sorted by the number of *problematic* columns, i.e. by the number of pink and orange cells in the column. The first three columns of the table are fixed and always visible when you scroll the table horizontally. Please note that the browser included with the current vesion of RStudio seems to have a problem where the column headers do not scroll correctly. If that is the case, open the application in a regular web browser, by click on the "open browser" button in the top right corner of the RStudio browser.
 
 Two controls are located at the top of the table
 - *Output folder name*: a text box where you can input the name of the output folder. If this folder does not exist, it will be created as a sub-folder of the current working directory.
-- *Process files*: this button will start file processing. A file will be created in the output folder, with the same name as the original input file. **If a file of the same name exists already, it will be overwritten**. No change is done to the original files.
+- *Process files*: this button will start file processing. A file will be created in the output folder, with the same name as the original input file. **If a file of the same name exists already, it will be overwritten**. No change is made to the original files.
 
 
 
