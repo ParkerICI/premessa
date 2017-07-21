@@ -228,8 +228,8 @@ normalize_folder <- function(wd, output.dir.name, beads.gates, beads.type, basel
 
         out.name <- paste(tools::file_path_sans_ext(f.name), "normalized.fcs", sep = "_")
         beads.file.name <- paste(tools::file_path_sans_ext(f.name), "beads.fcs", sep = "_")
-        flowCore::write.FCS(as_flowFrame(m.normed, fcs), file.path(out.dir.path, out.name))
-        flowCore::write.FCS(as_flowFrame(m.normed[beads.events, ], fcs), file.path(beads.dir.path, beads.file.name))
+        write_flowFrame(as_flowFrame(m.normed, fcs), file.path(out.dir.path, out.name))
+        write_flowFrame(as_flowFrame(m.normed[beads.events, ], fcs), file.path(beads.dir.path, beads.file.name))
 
         beads.normed <- apply(norm.res$beads.normed[, beads.cols], 2, median)
         beads.smoothed <- apply(norm.res$beads.smoothed[, beads.cols], 2, median)

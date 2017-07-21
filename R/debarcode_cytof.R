@@ -274,8 +274,7 @@ debarcode_fcs <- function(fcs, bc.key, output.dir, output.basename, sep.threshol
         temp <- m[assignments == lab,]
         out.fcs <- as_flowFrame(temp, fcs)
         out.fname <- file.path(output.dir, sprintf("%s_%s.fcs", output.basename, lab))
-        flowCore::write.FCS(out.fcs, out.fname)
-
+        write_flowFrame(out.fcs, out.fname)
     }
 }
 

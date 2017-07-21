@@ -66,8 +66,8 @@ remove_beads_from_file <- function(fcs, cutoff, input.fname, out.dir) {
         beads.fname <- paste(base.fname, "removedEvents.fcs", sep = "_")
 
         temp <- premessa::remove_beads_from_fcs(fcs, cutoff)
-        flowCore::write.FCS(temp$data.fcs, file.path(out.dir, data.fname))
-        flowCore::write.FCS(temp$beads.fcs, file.path(beads.dir, beads.fname))
+        premessa::write_flowFrame(temp$data.fcs, file.path(out.dir, data.fname))
+        premessa::write_flowFrame(temp$beads.fcs, file.path(beads.dir, beads.fname))
     }
 }
 

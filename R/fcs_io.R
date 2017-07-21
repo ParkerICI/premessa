@@ -23,7 +23,7 @@ update_flowFrame_keywords <- function(flowFrame, exprs.m, desc = NULL, data.rang
 
         if(!is.na(desc[i]))
             keyval[[s]] <- desc[i]
-        
+
         keyval[[n]] <- colnames(exprs.m)[i]
 
         if(data.range == "data")
@@ -96,7 +96,7 @@ copy_keywords <- function(source.frame, target.frame, kw.list) {
 #' but see also the description of the \code{source.flowFrame} parameter
 #' @param source.flowFrame If a flowFrame object is supplied, the function will copy matching names and descriptions
 #' keywords from it (e.g. $P1S in the \code{source.flowFrame} is copied to $P1S of the new flowFrame etc.). Extra columns present
-#' in exprs.m are preserved (i.e. if source.flowFrame doesn't contain $P1S the original version is preserved). Note that this 
+#' in exprs.m are preserved (i.e. if source.flowFrame doesn't contain $P1S the original version is preserved). Note that this
 #' in general only useful in simple cases where both the data matrix and the \code{flowFrame} represent the same
 #' data, and have the same column ordering, and you are interested in copy things like parameter names and descriptions.
 #' You will probably introduce errors and inconsistencies in the resulting \code{flowFrame} object if that is not the case.
@@ -120,6 +120,19 @@ as_flowFrame <- function(exprs.m, source.frame = NULL) {
 
 }
 
+#' Write a flowFrame as FCS file
+#'
+#' This function writes a flowFrame as an FCS file, taking care of updating the \code{$FILENAME} keyword
+#'
+#' @param flowFrame the \code{flowFrame} to write
+#' @param path destination path
+#' @export
+write_flowFrame <- function(flowFrame, path) {
+    f.name <- basename(path)
+    flowCore::keyword(flowFrame)$FILENAME <- f.name
+    flowCore::write.FCS(flowFrame, path)
+}
+
 read_fcs <- function(f.name) {
     fcs <- flowCore::read.FCS(f.name)
     ret <- list()
@@ -141,7 +154,7 @@ write_fcs <- function(fcs, out.name) {
     flow.frame <- flowCore::flowFrame(fcs$m)
     flow.frame <- update_flowFrame_keywords(flow.frame, fcs$m, fcs$desc, data.range = 262144)
     flowCore::keyword(flow.frame) <- keys
-    flowCore::write.FCS(flow.frame, out.name)
+    write_flowFrame(flow.frame, out.name)
 }
 
 
