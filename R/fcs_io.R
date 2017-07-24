@@ -129,7 +129,7 @@ as_flowFrame <- function(exprs.m, source.frame = NULL) {
 #' @export
 write_flowFrame <- function(flowFrame, path) {
     f.name <- basename(path)
-    flowCore::keyword(flowFrame)$FILENAME <- f.name
+    flowCore::keyword(flowFrame)$FIL <- f.name
     flowCore::write.FCS(flowFrame, path)
 }
 
