@@ -118,6 +118,7 @@ rename_parameters_in_files <- function(working.dir, out.dir, tab) {
     file.cols <- grep("Remove|Parameter", names(tab), invert = T)
     for(i in file.cols) {
         f.name <- file.path(working.dir, names(tab)[i])
+        print(sprintf("Processing %s ...", f.name))
         fcs <- read_fcs(f.name)
         to.remove <- row.names(tab)[tab$Remove]
         if(length(to.remove) > 0)
@@ -127,7 +128,6 @@ rename_parameters_in_files <- function(working.dir, out.dir, tab) {
         names.map <- tab$Parameter
         names(names.map) <- row.names(tab)
         fcs <- rename_fcs_parameters_name(fcs, names.map)
-
         names.map <- tab[, i]
         names(names.map) <- tab$Parameter
         names.map <- names.map[!is.na(tab[, i])]

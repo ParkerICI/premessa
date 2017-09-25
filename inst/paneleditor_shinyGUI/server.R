@@ -55,7 +55,7 @@ shinyServer(function(input, output, session) {
             isolate({
                 df <- rhandsontable::hot_to_r(input$paneleditorui_panel_table)
                 for(i in 1:ncol(df))
-                    df[, i] <- gsub("NA", NA, df[, i])
+                    df[, i] <- gsub("^NA$", NA, df[, i])
                 df$Remove <- as.logical(df$Remove)
 
 
