@@ -4,7 +4,7 @@
 
 Copyright 2016. Parker Institute for Cancer Immunotherapy
 
-**The software is still under heavy testing. Please contact us with bugs/feature requests** 
+**Please contact us with bugs/feature requests** 
 
 **---> Make sure to have a backup copy of your data before you use the software! <---**
 
