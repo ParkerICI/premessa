@@ -198,7 +198,6 @@ remove_beads_from_fcs <- function(fcs, dist.threshold) {
 #'
 #' @export
 normalize_folder <- function(wd, output.dir.name, beads.gates, beads.type, baseline = NULL) {
-
     baseline.data <- NULL
     if(is.null(baseline))
         baseline.data <- calculate_baseline(wd, beads.type, files.type = "data", beads.gates)
@@ -209,6 +208,8 @@ normalize_folder <- function(wd, output.dir.name, beads.gates, beads.type, basel
     beads.dir.path <- file.path(out.dir.path, "beads")
     #This will also create the upstram out.dir.path
     dir.create(beads.dir.path, recursive = T)
+
+    cat(jsonlite::toJSON(beads.gates), file = file.path(out.dir.path, "beads_gates.json"))
 
     ll <- lapply(names(beads.gates), function(f.name) {
         fcs <- flowCore::read.FCS(file.path(wd, f.name))

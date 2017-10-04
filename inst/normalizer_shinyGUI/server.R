@@ -287,7 +287,8 @@ shinyServer(function(input, output, session) {
                 title = "Normalizer report",
                 "Normalization started, please wait..."
             ))
-            premessa::normalize_folder(working.directory, "normed", beads.gates, beads.type, baseline = baseline)
+            premessa::normalize_folder(working.directory, "normed",
+                                       reactiveValuesToList(beads.gates), beads.type, baseline = baseline)
             updateSelectizeInput(session, input$beadremovalui_selected_fcs,
                                  choices = c("", list.files(normed.dir, pattern = "*normalized.fcs$", ignore.case = T)))
             showModal(modalDialog(
