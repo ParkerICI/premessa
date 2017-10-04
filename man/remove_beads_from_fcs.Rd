@@ -2,7 +2,7 @@
 % Please edit documentation in R/normalize_cytof.R
 \name{remove_beads_from_fcs}
 \alias{remove_beads_from_fcs}
-\title{Remove beads from an FCS file}
+\title{Remove beads from a flowFrame object}
 \usage{
 remove_beads_from_fcs(fcs, dist.threshold)
 }
@@ -22,6 +22,6 @@ Returns a list of two \code{flowFrame} objects
 }
 }
 \description{
-Remove beads from an FCS file
+Remove beads from a flowFrame object
 }
 

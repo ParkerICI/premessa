@@ -57,20 +57,6 @@ render_normalizer_ui <- function(working.directory, ...){renderUI({
     )
 })}
 
-remove_beads_from_file <- function(fcs, cutoff, input.fname, out.dir) {
-    if(!is.null(fcs)) {
-        beads.dir <- file.path(out.dir, "removed_events")
-        dir.create(beads.dir, recursive = T)
-        base.fname <- tools::file_path_sans_ext(input.fname)
-        data.fname <- paste(base.fname, "beadsremoved.fcs", sep = "_")
-        beads.fname <- paste(base.fname, "removedEvents.fcs", sep = "_")
-
-        temp <- premessa::remove_beads_from_fcs(fcs, cutoff)
-        premessa::write_flowFrame(temp$data.fcs, file.path(out.dir, data.fname))
-        premessa::write_flowFrame(temp$beads.fcs, file.path(beads.dir, beads.fname))
-    }
-}
-
 generate_normalizerui_plot_outputs <- function(n) {renderUI({
     lapply(1:n, function(i) {
         column(2,
@@ -114,13 +100,13 @@ shinyServer(function(input, output, session) {
 
     observeEvent(input$beadremovalui_remove_beads, {
             isolate({
-                fcs <- get_beadremovalui_fcs()
                 dir.create(beads.removed.dir, recursive = T)
                 showModal(modalDialog(
                     title = "Normalizer report",
                     "Bead removal started, please wait..."
                 ))
-                remove_beads_from_file(fcs, input$beadremovalui_cutoff, input$beadremovalui_selected_fcs, beads.removed.dir)
+                remove_beads_from_file(file.path(normed.dir, input$beadremovalui_selected_fcs),
+                                        input$beadremovalui_cutoff, beads.removed.dir)
                 showModal(modalDialog(
                     title = "Normalizer report",
                     sprintf("Beads removed from file: %s", input$beadremovalui_selected_fcs)
@@ -139,7 +125,7 @@ shinyServer(function(input, output, session) {
                 ))
                 files.list <- lapply(files.list, function(f.name) {
                     fcs <- flowCore::read.FCS(file.path(normed.dir, f.name))
-                    remove_beads_from_file(fcs, input$beadremovalui_cutoff, f.name, beads.removed.dir)
+                    remove_beads_from_file(file.path(normed.dir, f.name), input$beadremovalui_cutoff, beads.removed.dir)
                     return(f.name)
                 })
                 showModal(modalDialog(

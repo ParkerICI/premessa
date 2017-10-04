@@ -151,7 +151,7 @@ get_mahalanobis_distance_from_beads <- function(m, beads.events, beads.cols.name
 }
 
 
-#' Remove beads from an FCS file
+#' Remove beads from a flowFrame object
 #'
 #' @param fcs The \code{flowFrame} object from which beads must be removed. Must contain a column
 #' called \code{beadDist} representing the Mahalanobis distance of each event from the centroid
@@ -176,6 +176,45 @@ remove_beads_from_fcs <- function(fcs, dist.threshold) {
     ret <- list(data.fcs = data.fcs, beads.fcs = beads.fcs)
     return(ret)
 }
+
+
+
+#' Remove beads from an FCS file
+#'
+#' This function removes beads from an FCS file according to a specified Mahalanobis distance cutoff
+#' and writes the results in an output folder
+#'
+#' @param input.fname The path to the FCS file from which beads must be removed
+#' @param out.dir The path to the output directory
+#'
+#' @inheritParams remove_beads_from_fcs
+#'
+#'
+#' @export
+remove_beads_from_file <- function(input.fname, dist.threshold, out.dir) {
+    fcs <- flowCore::read.FCS(input.fname)
+    beads.dir <- file.path(out.dir, "removed_events")
+    dir.create(beads.dir, recursive = T)
+    base.fname <- tools::file_path_sans_ext(basename(input.fname))
+    data.fname <- paste(base.fname, "beadsremoved.fcs", sep = "_")
+    beads.fname <- paste(base.fname, "removedEvents.fcs", sep = "_")
+
+    temp <- premessa::remove_beads_from_fcs(fcs, dist.threshold)
+    premessa::write_flowFrame(temp$data.fcs, file.path(out.dir, data.fname))
+    premessa::write_flowFrame(temp$beads.fcs, file.path(beads.dir, beads.fname))
+    logfile <- file.path(out.dir, "beads_removal_cutoffs.json")
+    logdata <- NULL
+
+    if(file.exists(logfile))
+        logdata <- jsonlite::fromJSON(logfile)
+    else
+        logdata <- list()
+
+    logdata[[basename(input.fname)]] <- dist.threshold
+    cat(jsonlite::toJSON(logdata, auto_unbox = T, pretty = T), file = logfile)
+
+}
+
 
 
 #' Normalize a folder of FCS files
@@ -209,7 +248,7 @@ normalize_folder <- function(wd, output.dir.name, beads.gates, beads.type, basel
     #This will also create the upstram out.dir.path
     dir.create(beads.dir.path, recursive = T)
 
-    cat(jsonlite::toJSON(beads.gates), file = file.path(out.dir.path, "beads_gates.json"))
+    cat(jsonlite::toJSON(beads.gates, pretty = T), file = file.path(out.dir.path, "beads_gates.json"))
 
     ll <- lapply(names(beads.gates), function(f.name) {
         fcs <- flowCore::read.FCS(file.path(wd, f.name))
