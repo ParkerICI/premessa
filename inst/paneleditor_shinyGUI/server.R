@@ -26,8 +26,7 @@ get_panel_table <- function(files.list) {
     print("Done")
     common.names <- premessa:::get_common_names(panel.table)
     problem.idx <- premessa:::get_problem_idx(panel.table, common.names)
-    panel.table <- panel.table[, order(colSums(problem.idx), decreasing = T)]
-
+    panel.table <- panel.table[, order(colSums(problem.idx), decreasing = T), drop = F]
 
     panel.table <- data.frame(Parameter = row.names(panel.table), common.names, panel.table, check.names = F, stringsAsFactors = F)
     names(panel.table)[2] <- "Most common"
