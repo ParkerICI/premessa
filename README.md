@@ -123,6 +123,9 @@ working_directory
      |--- A_normalized.fcs
      |--- B_normalized.fcs
      |--- beads_before_and_after.pdf
+     |--- beads_vs_time
+          |--- A.pdf
+          |--- B.pdf
      |--- beads_removed
           |--- A_normalized_beadsremoved.fcs
           |--- B_normalized_beadsremoved.fcs
@@ -135,7 +138,8 @@ working_directory
 ```
 
 - *A_normalized.fcs*: contains the normalized data, with an added parameter called *beadDist* representing the square root of the Mahalanobis distance of each event from the centroid of the beads population
-- *beads_before_and_after.pdf*: a plot of the median intensities of the beads channels before and after normalization
+- *beads_before_and_after.pdf*: a plot of the median intensities of the beads channels before and after normalization. This plot contains a single median value per sample. Therefore it will not be informative if you are normalizing a single sample
+- *A.pdf*: a plot of the intensities of the beads channels along time, before and after normalization
 - *A_normalized_beadsremoved.fcs*: the normalized data with the beads events removed
 - *A_normalized_removedEevents.fcs*: the events that have been removed from the normalized data based on the Mahalanobis distance cutoff 
 - *A_beads.fcs*: the beads events, as identified by gating
