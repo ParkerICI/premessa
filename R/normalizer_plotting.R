@@ -1,14 +1,25 @@
-plot_beads_medians <- function(tab, out.name) {
+plot_beads_over_time <- function(beads.data, beads.normed, beads.cols) {
+    beads.data <- data.frame(beads.data, type = "Before", check.names = F, stringsAsFactors =  F)
+    beads.normed <- data.frame(beads.normed, type = "After", check.names =  F, stringsAsFactors =  F)
+    m <- rbind(beads.data, beads.normed)
+    m <- data.frame(m[, beads.cols], Time = m$Time, type = m$type, check.names = F, stringsAsFactors = F)
 
-    m <- reshape::melt.data.frame(tab, id.vars = c("sample", "type"))
+    plot_beads_medians(m, "Time")
+}
 
-    (p <- ggplot2::ggplot(ggplot2::aes(x = sample, y = asinh(value / 5), color = variable, group = variable), data = m)
+
+
+plot_beads_medians <- function(tab, x.var = "sample") {
+
+    m <- reshape::melt.data.frame(tab, id.vars = c(x.var, "type"))
+    m$value <- asinh(m$value / 5)
+
+    (p <- ggplot2::ggplot(ggplot2::aes_string(x = x.var, y = "value", color = "variable", group = "variable"), data = m)
         + ggplot2::facet_wrap(~type, ncol = 1)
         + ggplot2::geom_line()
         + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
         + ggplot2::scale_y_continuous("Intensity (asinh transformed)")
     )
-    ggplot2::ggsave(out.name, plot = p, width = 11, height = 8.5, units = "in")
 }
 
 

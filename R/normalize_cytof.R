@@ -245,8 +245,11 @@ normalize_folder <- function(wd, output.dir.name, beads.gates, beads.type, basel
 
     out.dir.path <- file.path(wd, output.dir.name)
     beads.dir.path <- file.path(out.dir.path, "beads")
+    beads.vs.time.path <- file.path(out.dir.path, "beads_vs_time")
     #This will also create the upstram out.dir.path
     dir.create(beads.dir.path, recursive = T)
+    dir.create(beads.vs.time.path, recursive = T)
+
 
     cat(jsonlite::toJSON(beads.gates, pretty = T), file = file.path(out.dir.path, "beads_gates.json"))
 
@@ -274,6 +277,9 @@ normalize_folder <- function(wd, output.dir.name, beads.gates, beads.type, basel
         beads.normed <- apply(norm.res$beads.normed[, beads.cols], 2, median)
         beads.smoothed <- apply(norm.res$beads.smoothed[, beads.cols], 2, median)
 
+        p <- plot_beads_over_time(norm.res$beads.smoothed, smooth_beads(norm.res$beads.normed), beads.cols)
+
+        ggplot2::ggsave(file.path(beads.vs.time.path, gsub(".fcs$", ".pdf", f.name, ignore.case = T)), plot = p, width = 11, height = 8.5, units = "in")
         return(list(beads.normed = beads.normed, beads.smoothed = beads.smoothed))
     })
 
@@ -286,6 +292,7 @@ normalize_folder <- function(wd, output.dir.name, beads.gates, beads.type, basel
     beads.medians$sample <- rep(names(beads.gates), 2)
     beads.medians$type <- c(rep("After", length(ll)), rep("Before", length(ll)))
     beads.medians$type <- factor(beads.medians$type, levels = c("Before", "After"))
-    plot_beads_medians(beads.medians, file.path(out.dir.path, "beads_before_and_after.pdf"))
+    p <- plot_beads_medians(beads.medians)
+    ggplot2::ggsave(file.path(out.dir.path, "beads_before_and_after.pdf"), plot = p, width = 11, height = 8.5, units = "in")
 
 }
