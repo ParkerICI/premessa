@@ -84,9 +84,9 @@ shinyServer(function(input, output, session) {
         hot <- rhandsontable::hot_cols(hot, fixedColumnsLeft = 3, renderer = "
             function(instance, td, row, col, prop, value, cellProperties) {
                 if(col == 0)
-                    Handsontable.CheckboxCell.renderer.apply(this, arguments)
+                    Handsontable.renderers.CheckboxRenderer.apply(this, arguments)
                 else {
-                    Handsontable.TextCell.renderer.apply(this, arguments)
+                    Handsontable.renderers.TextRenderer.apply(this, arguments)
 
                     if(instance.params != null) {
                         if(instance.params.data[row][0])
