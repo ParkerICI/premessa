@@ -17,4 +17,3 @@ Mahalanobis distance}
 \description{
 Biaxial plot color-coded according to the Mahalanobis distance from the beads population
 }
-

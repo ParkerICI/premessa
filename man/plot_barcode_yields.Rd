@@ -23,4 +23,3 @@ Returns a ggplot2 object
 \description{
 Plotting sample yields after debarcoding
 }
-

@@ -19,4 +19,3 @@ Returns the FCS data with the updated names
 \description{
 This function renames FCS parameter names (i.e. the $PnN keyword)
 }
-

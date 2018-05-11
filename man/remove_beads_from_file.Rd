@@ -18,4 +18,3 @@ remove_beads_from_file(input.fname, dist.threshold, out.dir)
 This function removes beads from an FCS file according to a specified Mahalanobis distance cutoff
 and writes the results in an output folder
 }
-

@@ -21,4 +21,3 @@ A vector of length \code{nrow(m)} containing the \code{sqrt} of the Mahalanobis 
 \description{
 Calculates the Mahalanobis distance of each event from the centroid of the beads population
 }
-

@@ -25,4 +25,3 @@ Returns a \code{flowFrame} object
 This function converts a matrix to a \code{flowFrame} object, taking care of properly setting
 parameters and keywords in the resulting object
 }
-

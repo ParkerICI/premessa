@@ -33,4 +33,3 @@ Returns a list with the following components
 \description{
 This function performs the actual normalization
 }
-

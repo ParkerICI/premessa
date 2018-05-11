@@ -18,4 +18,3 @@ Returns a ggplot object
 \description{
 Plotting debarcoded sample yields as a function of the separation threshold
 }
-

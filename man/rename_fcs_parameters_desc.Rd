@@ -21,4 +21,3 @@ Returns the FCS data with the updated descriptions
 This function renames FCS parameter descriptions (also called "short names", i.e.
   the $PnS keyword)
 }
-

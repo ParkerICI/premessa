@@ -18,4 +18,3 @@ Returns a vector containing the names of the barcode channels. The vector can be
 \description{
 Get the names of the barcode channels
 }
-

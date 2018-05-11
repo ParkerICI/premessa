@@ -22,4 +22,3 @@ Returns a vector of squared Mahalanobis distances, as calculated by \code{stats:
 \description{
 Calculates the squared Mahalanobis distance from the centroid of the barcoded sample
 }
-

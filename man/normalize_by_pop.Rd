@@ -21,4 +21,3 @@ Returns a matrix of normalized data. The ordering of the rows of the input matri
 \description{
 This function uses preliminary barcode assignments to normalize the intensity of the barcode channels
 }
-

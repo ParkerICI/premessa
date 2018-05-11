@@ -16,4 +16,3 @@ and select any file in that directory. The directory itself will then become
 the working directory for the software.
 To stop the software simply hit the "ESC" key in your R session.
 }
-

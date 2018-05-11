@@ -20,4 +20,3 @@ Returns a ggplot object
 \description{
 Plotting barcode channels intensities for individual events
 }
-

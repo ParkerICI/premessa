@@ -12,4 +12,3 @@ debarcoder_GUI(...)
 \description{
 To stop the software simply hit the "ESC" key in your R session.
 }
-

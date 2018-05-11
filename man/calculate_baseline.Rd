@@ -31,4 +31,3 @@ Returns a vector with the medians of the beads events across all processed files
 Extract beads events from all the FCS files in the working directory
 and calculates the baseline for normalization
 }
-

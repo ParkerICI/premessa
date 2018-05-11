@@ -21,4 +21,3 @@ Returns a boolean vector of length \code{nrow(m)} with the indexes of the bead e
 \description{
 Applies the beads gates to the data matrix and idenfies the beads
 }
-

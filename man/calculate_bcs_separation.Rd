@@ -14,4 +14,3 @@ calculate_bcs_separation(m, bc.channels, expected.positive, cutoff)
 \description{
 This assumes that all barcodes are identified by the same number of channels
 }
-

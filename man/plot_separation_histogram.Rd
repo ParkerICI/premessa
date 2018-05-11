@@ -15,4 +15,3 @@ Returns a ggplot object
 \description{
 Plotting the distribution of separation values
 }
-

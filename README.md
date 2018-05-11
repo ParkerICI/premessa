@@ -80,7 +80,7 @@ To stop the software simply hit the "ESC" key in your R session.
 
 ## Usage
 
-Once you have selected the working directory, the software will extract the panel information from all the FCS files contained in the directory. This information is then displayed in a table, where each row corresponds to a different parameter name ($PnN keyword), indicated by the row names (leftmost column), and each column corresponds to a different file, indicated in the column header. Each cell represents the description string ($PnS keyword) of a specific parameter in a given file. If a parameter is missing from a file, an *NA* is displayed in the corresponding cell, which will be colored orange.
+Once you have selected the working directory, the software will extract the panel information from all the FCS files contained in the directory. This information is then displayed in a table, where each row corresponds to a different parameter name ($PnN keyword), indicated by the row names (leftmost column), and each column corresponds to a different file, indicated in the column header. Each cell represents the description string ($PnS keyword) of a specific parameter in a given file. If a parameter is missing from a file, the word *absent* is displayed in the corresponding cell, which will be colored orange (note that this means that *absent* cannot be a valid parameter name)
 
 The table begins with three special columns:
 - *Remove*: if the box is checked the corresponding parameter is removed from all the files, and the row is grayed out

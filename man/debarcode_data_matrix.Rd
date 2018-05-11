@@ -25,4 +25,3 @@ Returns a list with the following components
 \description{
 Debarcodes an individual matrix of data
 }
-

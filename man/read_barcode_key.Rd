@@ -16,4 +16,3 @@ Returns a data frame containing the barcode key
 \description{
 Loading a barcode key
 }
-

@@ -20,4 +20,3 @@ used if \code{mahal.threshold} is not \code{NULL}}
 \description{
 Calculate number of events assigned to each sample
 }
-

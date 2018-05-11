@@ -24,4 +24,3 @@ Returns a list of two \code{flowFrame} objects
 \description{
 Remove beads from a flowFrame object
 }
-

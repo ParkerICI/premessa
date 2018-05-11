@@ -54,7 +54,7 @@ shinyServer(function(input, output, session) {
             isolate({
                 df <- rhandsontable::hot_to_r(input$paneleditorui_panel_table)
                 for(i in 1:ncol(df))
-                    df[, i] <- gsub("^NA$", NA, df[, i])
+                    df[, i] <- gsub("absent", NA, df[, i])
                 df$Remove <- as.logical(df$Remove)
 
 
@@ -78,7 +78,13 @@ shinyServer(function(input, output, session) {
     })
 
     output$paneleditorui_panel_table <- rhandsontable::renderRHandsontable({
-        df <- data.frame(Remove = FALSE, panel.table, check.names = F, stringsAsFactors = F)
+        temp <- panel.table
+
+        for(i in 1:ncol(temp))
+            temp[, i][is.na(temp[, i])] <- "absent"
+
+        df <- data.frame(Remove = FALSE, temp, check.names = F, stringsAsFactors = F)
+
 
         hot <- rhandsontable::rhandsontable(df, rowHeaderWidth = 100)
         hot <- rhandsontable::hot_cols(hot, fixedColumnsLeft = 3, renderer = "
@@ -92,7 +98,7 @@ shinyServer(function(input, output, session) {
                         if(instance.params.data[row][0])
                             td.style.background = 'lightgrey'
                         else {
-                            if(value == 'NA')
+                            if(value == 'absent')
                                 td.style.background = 'orange'
                             else if(value != instance.params.data[row][2] && col > 2)
                                 td.style.background = 'lightpink'

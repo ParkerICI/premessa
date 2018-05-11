@@ -14,4 +14,3 @@ write_flowFrame(flowFrame, path)
 \description{
 This function writes a flowFrame as an FCS file, taking care of updating the \code{$FILENAME} keyword
 }
-

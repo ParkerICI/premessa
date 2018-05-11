@@ -26,4 +26,3 @@ Returns a character vector containing the sample labels, given the current thres
 \description{
 Assign events to a specific sample
 }
-

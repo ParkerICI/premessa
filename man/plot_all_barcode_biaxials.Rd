@@ -17,4 +17,3 @@ Returns a ggplot2 object
 \description{
 Scatteplot matrix of all the barcode channels
 }
-

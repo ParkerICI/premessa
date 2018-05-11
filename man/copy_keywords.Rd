@@ -20,4 +20,3 @@ Returns a \code{flowFrame} object
 \description{
 Copy FCS keywords from a source to a target flowFrame object
 }
-

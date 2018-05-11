@@ -28,4 +28,3 @@ FCS files of beads events, whose median intensities will be used as baseline.}
 Main wrapper for the normalization pipeline. Use beads gates to identify beads, calculate a baseline
 for normalization and then normalize the files, writing new output FCS
 }
-

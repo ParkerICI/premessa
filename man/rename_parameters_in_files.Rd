@@ -27,4 +27,3 @@ rename_parameters_in_files(working.dir, out.dir, tab)
 \description{
 This function renames FCS parameters in a set of files, as specified by a template
 }
-

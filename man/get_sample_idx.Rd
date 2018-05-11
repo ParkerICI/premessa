@@ -28,4 +28,3 @@ Returns a boolean vector with \code{TRUE} corresponding to the desired events
 \description{
 Returns the indices of the events corresponding to a given sample label
 }
-

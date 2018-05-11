@@ -21,4 +21,3 @@ Returns a data.frame with \code{row.names} corresponding to the union of all
 This function reads information about the parameters in a set of FCS files
 and returns the aggregate information in a table
 }
-

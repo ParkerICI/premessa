@@ -32,4 +32,3 @@ For each debarcoded sample, a new FCS file is created in the output directory. U
 \description{
 Takes all the parameters as input, does everything and writes back the FCS files
 }
-
