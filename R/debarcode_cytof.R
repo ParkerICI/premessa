@@ -147,7 +147,7 @@ get_sample_idx <- function(label, bc.results, sep.threshold, mahal.threshold = N
 #'  and the centroid of the debarcoded sample, as assigned using this threshold.
 #'
 #' @return Returns a vector of squared Mahalanobis distances, as calculated by \code{stats::mahalanobis}. The distance
-#'  values are capped at 30
+#'  values are capped at 30. If the distance calculation fails the corresponding vector values will be \code{NA}
 #'
 #' @export
 get_mahalanobis_distance <- function(m, bc.res, sep.threshold) {
@@ -158,9 +158,19 @@ get_mahalanobis_distance <- function(m, bc.res, sep.threshold) {
     for(lab in unique(assignments)) {
         sel.rows <- assignments == lab
         temp <- m[sel.rows, bc.channels]
-        cov.m <- cov(temp)
+
         #Here we are not taking the sqrt (different from normalizer)
-        mahal <- mahalanobis(temp, colMeans(temp), cov.m)
+        mahal <- tryCatch({
+                cov.m <- cov(temp)
+                mahalanobis(temp, colMeans(temp), cov.m, tol = 1e-30)
+            },
+            error = function(e) {
+                message(sprintf("Mahalanobis distance calculation failed for sample %s", lab))
+                message("Mahalanobis distance filtering will not be performed for this sample")
+                flush.console()
+                return(NA)
+            })
+
         ret[sel.rows] <- mahal
     }
     ret[ret > 30] <- 30
@@ -271,10 +281,12 @@ debarcode_fcs <- function(fcs, bc.key, output.dir, output.basename, sep.threshol
     assignments <- get_assignments_at_threshold(bc.res, sep.threshold, mahal.dist.threshold, mahal.dist)
 
     for(lab in unique(assignments)) {
-        temp <- m[assignments == lab,]
+        temp <- m[assignments == lab,, drop = F]
+
         out.fcs <- as_flowFrame(temp, fcs)
         out.fname <- file.path(output.dir, sprintf("%s_%s.fcs", output.basename, lab))
         write_flowFrame(out.fcs, out.fname)
+
     }
 }
 

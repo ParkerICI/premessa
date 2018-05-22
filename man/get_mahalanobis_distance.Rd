@@ -17,7 +17,7 @@ and the centroid of the debarcoded sample, as assigned using this threshold.}
 }
 \value{
 Returns a vector of squared Mahalanobis distances, as calculated by \code{stats::mahalanobis}. The distance
- values are capped at 30
+ values are capped at 30. If the distance calculation fails the corresponding vector values will be \code{NA}
 }
 \description{
 Calculates the squared Mahalanobis distance from the centroid of the barcoded sample
