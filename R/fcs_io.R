@@ -50,21 +50,6 @@ update_flowFrame_keywords <- function(flowFrame, exprs.m, desc = NULL, data.rang
     return(flowFrame)
 }
 
-copy_keywords_name_desc <- function(source.frame, target.frame) {
-    source.keywords <- flowCore::keyword(source.frame)
-
-    for (i in 1:ncol(target.frame)) {
-        s <- paste("$P",i,"S",sep="")
-        n <- paste("$P",i,"N",sep="")
-
-        if(!is.null(source.keywords[[s]]))
-            flowCore::keyword(target.frame) <- source.keywords[s]
-
-        if(!is.null(source.keywords[[n]]))
-            flowCore::keyword(target.frame) <- source.keywords[n]
-    }
-    return(target.frame)
-}
 
 #' Copy FCS keywords from a source to a target flowFrame object
 #'
@@ -115,6 +100,14 @@ as_flowFrame <- function(exprs.m, source.frame = NULL) {
         kw.list <- c(kw.list, paste("$P", 1:num.cols, "N", sep = ""))
         kw.list <- c(kw.list, "$CYT", "$CYTSN", "$DATE", "$FIL", "$BTIM", "$ETIM")
         flow.frame <- copy_keywords(source.frame, flow.frame, kw.list)
+        marker.names <- as.character(flowCore::parameters(source.frame)$desc)
+        names(marker.names) <- as.character(flowCore::parameters(source.frame)$name)
+
+        # Use the channel name for channels where the description is missing
+        w <- is.na(marker.names)
+        marker.names[w] <- names(marker.names)[w]
+
+        flowCore::markernames(flow.frame) <- marker.names
     }
     return(flow.frame)
 
@@ -154,6 +147,9 @@ write_fcs <- function(fcs, out.name) {
     flow.frame <- flowCore::flowFrame(fcs$m)
     flow.frame <- update_flowFrame_keywords(flow.frame, fcs$m, fcs$desc, data.range = 262144)
     flowCore::keyword(flow.frame) <- keys
+    marker.names <- fcs$desc
+    names(marker.names) <- colnames(fcs$m)
+    flowCore::markernames(flow.frame) <- marker.names
     write_flowFrame(flow.frame, out.name)
 }
 
