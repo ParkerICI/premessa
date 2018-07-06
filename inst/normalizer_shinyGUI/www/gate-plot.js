@@ -1,153 +1,171 @@
-var convertDataForD3 = function(obj) {
-    var res = [];
-    var len = obj[Object.keys(obj)[0]].length;
-    for(var i = 0; i < len; i++) {
-        var temp = {};
-        for(var key in obj)
-            temp[key] = obj[key][i];
-        res.push(temp);
+
+
+
+
+class GatePlotOutputBinding extends Shiny.OutputBinding {
+    
+    constructor() {
+        super()
+        this.data = null
+        this.plotData = null
+        this.domEl = null
     }
-    return(res);
-}
-
-var paintPoint = function(ctx, d, xScale, yScale, r) {
-    ctx.beginPath();
-    ctx.fillStyle = d.color;
-    ctx.arc(xScale(d.x), yScale(d.y), r, 0, 2 * Math.PI);
-    ctx.fill();
-};
-
-  var doPlot = function(ctx, plotData, xScale, yScale) {
-    var offScreen = document.createElement('canvas');
-    var r = 2;
-    var d = r * 2;
-    //Spacing between the circles to avoid anti-aliasing problems
-    var pad = 10;
-    colors = ['black', 'red'];
-
-    offScreen.width = (d + pad) * colors.length;
-    offScreen.height = d;
-
-    var offCtx = offScreen.getContext('2d');
-
-    colors.forEach(function(c, i) {
-        offCtx.fillStyle = c;
-        offCtx.beginPath();
-        offCtx.arc((i * (d + pad)) + r, r, r, 0, 2 * Math.PI);
-        offCtx.closePath();
-        offCtx.fill();
-        
-    });
-
-    plotData.forEach(function(datum, i, a) {
-        ctx.drawImage(offScreen, datum.color * (d + pad), 0, d, d, xScale(datum.x) - r, yScale(datum.y) - r, d, d);
-    });
-
-}
-
-var gatePlot = new Shiny.OutputBinding();
-$.extend(gatePlot, {
-    find: function(scope) {
-        var ret = $(scope).find('.shiny-gateplot');
+    
+    find(scope) {
+        let ret = $(scope).find('.shiny-gateplot')
         return(ret);
-    },
-
-    renderValue: function(el, data) {
+    }
+    
+    renderValue(el, data) {
         console.log(data);
-        data.color = data.color.map(function(d) { return(d == "black" ? 0 : 1); });
-        var plotData = convertDataForD3({x: data.x, y: data.y, color: data.color});
-        //top; right; bottom; left
-        var margins = [50, 20, 50, 30];
-        var width = 300 - margins[1] - margins[3];
-        var height = 350 - margins[0] - margins[2];
+        data.color = data.color.map(d => d == "black" ? 0 : 1)
+        let plotData = GatePlotOutputBinding.convertDataForD3({x: data.x, y: data.y, color: data.color})
+        this.data = data
+        this.plotData = plotData
+        this.domEl = el
+        this.draw()
+    }
 
-        var canvas = d3.select(el)
+    draw() {
+        //top; right; bottom; left
+        let margins = [50, 20, 50, 30]
+
+        let elWidth = this.domEl.clientWidth
+        let elHeight = (window.innerHeight - this.domEl.offsetTop) * 0.3
+
+        let width = elWidth - margins[1] - margins[3]
+        let height = elHeight - margins[0] - margins[2]
+
+        let canvas = d3.select(this.domEl)
                 .select("canvas")
                 .attr("width", width + margins[1] + margins[3])
                 .attr("height", height + margins[0] + margins[2])
-                .style("padding", margins.join("px ") + "px");
+                .style("padding", margins.join("px ") + "px")
 
-        var ctx = canvas.node().getContext('2d');
+        let ctx = canvas.node().getContext('2d')
         
         //Clear existing graph
-        d3.select(el).select("svg").remove();
-        ctx.clearRect(0, 0, canvas.node().width, canvas.node().height);
+        d3.select(this.domEl).select("svg").remove()
+        ctx.clearRect(0, 0, canvas.node().width, canvas.node().height)
 
-        var svg = d3.select(el)
+        let svg = d3.select(this.domEl)
             .append("svg")
             .attr("width", width + margins[1] + margins[3])
             .attr("height", height + margins[0] + margins[2])
             .append("svg:g")
-            .attr("transform", "translate(" + margins[3] + "," + margins[0] + ")");
+            .attr("transform", "translate(" + margins[3] + "," + margins[0] + ")")
         
-        var xExtent = d3.extent(plotData, function(d) { return(d.x); });
-        var xScale = d3.scaleLinear()
+        let xExtent = d3.extent(this.plotData, d => d.x)
+        let xScale = d3.scaleLinear()
             .range([0, width])
-            .domain([xExtent[0] - 0.5, xExtent[1] + 0.5]);
+            .domain([xExtent[0] - 0.5, xExtent[1] + 0.5])
         
-        var yExtent = d3.extent(plotData, function(d) { return(d.y); });
-        var yScale = d3.scaleLinear()
+        let yExtent = d3.extent(this.plotData, d => d.y)
+        let yScale = d3.scaleLinear()
             .range([height, 0])
-            .domain([yExtent[0] - 0.5, yExtent[1] + 0.5]);
+            .domain([yExtent[0] - 0.5, yExtent[1] + 0.5])
 
-        var xAxisG = svg.append("g")
+        let xAxisG = svg.append("g")
                     .attr("class", "xAxis")
-                    .attr("transform", "translate(0, "  + height + ")");
-        var yAxisG = svg.append("g")
-                    .attr("class", "yAxis");
+                    .attr("transform", "translate(0, "  + height + ")")
+        let yAxisG = svg.append("g")
+                    .attr("class", "yAxis")
 
-        var xAxis = d3.axisBottom(xScale).ticks(7);
-        var yAxis = d3.axisLeft(yScale).ticks(7);
+        let xAxis = d3.axisBottom(xScale).ticks(7)
+        let yAxis = d3.axisLeft(yScale).ticks(7)
 
-        var brushed = function() {
-            var sel = d3.event.selection;
-            var xLim = [sel[0][0], sel[1][0]].map(xScale.invert);
+        let brushed = () => {
+            let sel = d3.event.selection;
+            let xLim = [sel[0][0], sel[1][0]].map(xScale.invert)
             //This is necessary because the range of the y scale is inverted
-            var yLim = [sel[1][1], sel[0][1]].map(yScale.invert);
+            let yLim = [sel[1][1], sel[0][1]].map(yScale.invert)
             
-            var shinyData = {
+            let shinyData = {
                 xLim: xLim,
                 yLim: yLim,
-                xAxisName: data.xAxisName,
-                yAxisName: data.yAxisName,
-                file: data.file
+                xAxisName: this.data.xAxisName,
+                yAxisName: this.data.yAxisName,
+                file: this.data.file
             }
 
             console.log(shinyData);
-            Shiny.onInputChange("normalizerui_gate_selected", shinyData);
+            Shiny.onInputChange("normalizerui_gate_selected", shinyData)
         }
 
-        var brush = d3.brush();
+        let brush = d3.brush()
 
 
 
-        var brushG = svg.append("g")
+        let brushG = svg.append("g")
             .attr("class", "brush")
-            .call(brush);
+            .call(brush)
         
-        var gates = data.channelGates;
+        let gates = this.data.channelGates
         brush.move(brushG, [[xScale(gates.x[0]), yScale(gates.y[1])], 
-                            [xScale(gates.x[1]), yScale(gates.y[0])]]);
-        brush.on("end", brushed);
+                            [xScale(gates.x[1]), yScale(gates.y[0])]])
+        brush.on("end", brushed)
 
-        xAxisG.call(xAxis);
-        yAxisG.call(yAxis);
+        xAxisG.call(xAxis)
+        yAxisG.call(yAxis)
         
         svg.append("text")             
             .attr("transform", "translate(" + (width / 2) + " ," + 
-                           (height + margins[0]) + ")")
+                            (height + margins[0]) + ")")
             .style("text-anchor", "middle")
-            .text(data.xAxisName);
+            .text(this.data.xAxisName)
         
         svg.append("text")             
             .attr("transform", "translate(" + -(margins[3] / 1.5) + ", " + (height / 2)+ ") rotate(-90)")
             .style("text-anchor", "middle")
-            .text(data.yAxisName);
+            .text(this.data.yAxisName);
 
-        doPlot(ctx, plotData, xScale, yScale);
+        GatePlotOutputBinding.doPlot(ctx, this.plotData, xScale, yScale);
 
     }
 
-});
+    static doPlot(ctx, plotData, xScale, yScale) {
+        let offScreen = document.createElement('canvas')
+        let r = 2
+        let d = r * 2
+        //Spacing between the circles to avoid anti-aliasing problems
+        let pad = 10
+        let colors = ['black', 'red']
+    
+        offScreen.width = (d + pad) * colors.length
+        offScreen.height = d
+    
+        let offCtx = offScreen.getContext('2d')
+    
+        colors.forEach((c, i) => {
+            offCtx.fillStyle = c
+            offCtx.beginPath()
+            offCtx.arc((i * (d + pad)) + r, r, r, 0, 2 * Math.PI)
+            offCtx.closePath()
+            offCtx.fill()
+            
+        })
+    
+        plotData.forEach((datum, i, a) => {
+            ctx.drawImage(offScreen, datum.color * (d + pad), 0, d, d, xScale(datum.x) - r, yScale(datum.y) - r, d, d)
+        })
+    
+    }
 
-Shiny.outputBindings.register(gatePlot, 'gateplot');
+
+    static convertDataForD3(obj) {
+        let res = []
+        let len = obj[Object.keys(obj)[0]].length
+        for(let i = 0; i < len; i++) {
+            let temp = {}
+            for(let key in obj)
+                temp[key] = obj[key][i]
+            res.push(temp)
+        }
+        return(res)
+    }
+    
+}
+
+let gatePlotOutputBinding = new GatePlotOutputBinding()
+
+Shiny.outputBindings.register(gatePlotOutputBinding, 'gateplot');
