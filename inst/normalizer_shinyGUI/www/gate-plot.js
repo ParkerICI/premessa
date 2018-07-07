@@ -3,40 +3,29 @@
 
 
 class GatePlotOutputBinding extends Shiny.OutputBinding {
-    
-    constructor() {
-        super()
-        this.data = null
-        this.plotData = null
-        this.domEl = null
-    }
-    
     find(scope) {
         let ret = $(scope).find('.shiny-gateplot')
         return(ret);
     }
     
     renderValue(el, data) {
-        console.log(data);
         data.color = data.color.map(d => d == "black" ? 0 : 1)
         let plotData = GatePlotOutputBinding.convertDataForD3({x: data.x, y: data.y, color: data.color})
-        this.data = data
-        this.plotData = plotData
-        this.domEl = el
-        this.draw()
+        GatePlotOutputBinding.draw(data, plotData, el)
+        
     }
 
-    draw() {
+    static draw(data, plotData, domEl) {
         //top; right; bottom; left
         let margins = [50, 20, 50, 30]
 
-        let elWidth = this.domEl.clientWidth
-        let elHeight = (window.innerHeight - this.domEl.offsetTop) * 0.3
+        let elWidth = domEl.clientWidth
+        let elHeight = (window.innerHeight - domEl.offsetTop) * 0.3
 
         let width = elWidth - margins[1] - margins[3]
         let height = elHeight - margins[0] - margins[2]
 
-        let canvas = d3.select(this.domEl)
+        let canvas = d3.select(domEl)
                 .select("canvas")
                 .attr("width", width + margins[1] + margins[3])
                 .attr("height", height + margins[0] + margins[2])
@@ -45,22 +34,22 @@ class GatePlotOutputBinding extends Shiny.OutputBinding {
         let ctx = canvas.node().getContext('2d')
         
         //Clear existing graph
-        d3.select(this.domEl).select("svg").remove()
+        d3.select(domEl).select("svg").remove()
         ctx.clearRect(0, 0, canvas.node().width, canvas.node().height)
 
-        let svg = d3.select(this.domEl)
+        let svg = d3.select(domEl)
             .append("svg")
             .attr("width", width + margins[1] + margins[3])
             .attr("height", height + margins[0] + margins[2])
             .append("svg:g")
             .attr("transform", "translate(" + margins[3] + "," + margins[0] + ")")
         
-        let xExtent = d3.extent(this.plotData, d => d.x)
+        let xExtent = d3.extent(plotData, d => d.x)
         let xScale = d3.scaleLinear()
             .range([0, width])
             .domain([xExtent[0] - 0.5, xExtent[1] + 0.5])
         
-        let yExtent = d3.extent(this.plotData, d => d.y)
+        let yExtent = d3.extent(plotData, d => d.y)
         let yScale = d3.scaleLinear()
             .range([height, 0])
             .domain([yExtent[0] - 0.5, yExtent[1] + 0.5])
@@ -83,9 +72,9 @@ class GatePlotOutputBinding extends Shiny.OutputBinding {
             let shinyData = {
                 xLim: xLim,
                 yLim: yLim,
-                xAxisName: this.data.xAxisName,
-                yAxisName: this.data.yAxisName,
-                file: this.data.file
+                xAxisName: data.xAxisName,
+                yAxisName: data.yAxisName,
+                file: data.file
             }
 
             console.log(shinyData);
@@ -100,7 +89,7 @@ class GatePlotOutputBinding extends Shiny.OutputBinding {
             .attr("class", "brush")
             .call(brush)
         
-        let gates = this.data.channelGates
+        let gates = data.channelGates
         brush.move(brushG, [[xScale(gates.x[0]), yScale(gates.y[1])], 
                             [xScale(gates.x[1]), yScale(gates.y[0])]])
         brush.on("end", brushed)
@@ -112,14 +101,14 @@ class GatePlotOutputBinding extends Shiny.OutputBinding {
             .attr("transform", "translate(" + (width / 2) + " ," + 
                             (height + margins[0]) + ")")
             .style("text-anchor", "middle")
-            .text(this.data.xAxisName)
+            .text(data.xAxisName)
         
         svg.append("text")             
             .attr("transform", "translate(" + -(margins[3] / 1.5) + ", " + (height / 2)+ ") rotate(-90)")
             .style("text-anchor", "middle")
-            .text(this.data.yAxisName);
+            .text(data.yAxisName);
 
-        GatePlotOutputBinding.doPlot(ctx, this.plotData, xScale, yScale);
+        GatePlotOutputBinding.doPlot(ctx, plotData, xScale, yScale);
 
     }
 
@@ -168,4 +157,15 @@ class GatePlotOutputBinding extends Shiny.OutputBinding {
 
 let gatePlotOutputBinding = new GatePlotOutputBinding()
 
-Shiny.outputBindings.register(gatePlotOutputBinding, 'gateplot');
+Shiny.outputBindings.register(gatePlotOutputBinding, 'gateplot')
+
+/*
+window.onresize = () => {
+    let plots = document.getElementsByClassName("shiny-gateplot")
+    let event = new Event("resize")
+
+    for(let i = 0; i < plots.length; i++) {
+        let el = plots[i]
+        el.dispatchEvent(event)
+    }
+}*/
