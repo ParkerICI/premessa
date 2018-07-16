@@ -49,8 +49,9 @@ This will install the premessa R package together with all the required dependen
 
 # Usage
 
-The software allows you to perform two operations:
+The software allows you to perform four operations:
 - [Panel editing and renaming](#panel-editing-and-renaming)
+- [FCS file concatenation](#fcs-file-concatenation)
 - [Bead-based normalization](#bead-based-normalization)
 - [De-barcoding](#de-barcoding)
 
@@ -68,7 +69,7 @@ The consequence of this choice is that **the ordering of the channels is not pre
 
 ## Starting the GUI and selecting the working directory
 
-You can start the normalizer GUI by typing the following commands in your R session
+You can start the panel editor GUI by typing the following commands in your R session
 
 ```
 library(premessa)
@@ -81,6 +82,8 @@ To stop the software simply hit the "ESC" key in your R session.
 ## Usage
 
 Once you have selected the working directory, the software will extract the panel information from all the FCS files contained in the directory. This information is then displayed in a table, where each row corresponds to a different parameter name ($PnN keyword), indicated by the row names (leftmost column), and each column corresponds to a different file, indicated in the column header. Each cell represents the description string ($PnS keyword) of a specific parameter in a given file. If a parameter is missing from a file, the word *absent* is displayed in the corresponding cell, which will be colored orange (note that this means that *absent* cannot be a valid parameter name)
+
+Whatever is written in the table when the *Process files* button is pressed, represents what the parameters will be renamed to. In other words the table represents the current state of the files, and you have to edit the individual cells as necessary to reflect the desired final state of the files. You can use the same shortcuts you use in Excel to facilitate the editing process (e.g. shift-click to select multiple rows or columns, ctrl-C and ctrl-V for copy and paste respectively, etc.). However be careful that pressing ctrl-Z (the conventional undo shortcut) will undo *all* you changes
 
 The table begins with three special columns:
 - *Remove*: if the box is checked the corresponding parameter is removed from all the files, and the row is grayed out
@@ -96,8 +99,9 @@ Two controls are located at the top of the table
 
 
 
+## FCS file concatenation
 
-
+The `premessa` package contains a simple function for concatenating multiple FCS files together. This is useful in case the acquisition of a single samples has been split across multiple files. The function is called `concatenate_fcs_files` and its documentation can be acessed directly from R. Note that this function assumes that the files are all identical panel-wise, i.e. they have the same parameter names and descriptions. Please use the [panel editor](#panel-editing-and-renaming) before concatenation if that is not the case.
 
 ## Bead-based normalization
 
@@ -167,7 +171,7 @@ This panel contains the following controls:
 - *Select beads type*: select the type of normalization beads that have been used for the experiment. Most users will select the default *Fluidigm Beads (140, 151, 153, 165, 175)*. These are the beads [sold](https://www.fluidigm.com/reagents/proteomics/201078-eq-four-element-calibration-beads--100ml) by Fluidigm. The numbers indicate the beads channels used for normalization.
 - *Select FCS file*: the FCS  that is currently being visualized for gating. This dropdown will contain all the FCS files located in the working directory. The gating plots will appear under the row of buttons.
 - *Select baseline for normalization*: the baseline beads intensities to be used for normalization. You can either use the median beads intensities of the FCS files that you are currently using for normalization (*Current files* option), or the median intensities of an existing set of beads files (*Existing folder of beads files*). If you select the latter a file dialog window will pop-up when you select the option. Use the window to navigate to a directory containing FCS files containing beads events only (for instance the *A_beads.fcs* file in the above example) and select one of the files. The software will then load *all* the files contained in the same directory as the file you selected. The currently selected folder will be displayed in a text box on the right. 
-- *Identify beads*: clicking this button will color in red the events that are recognized as beads events in the gating plots.
+- *Visualize beads*: clicking this button will color in red the events that are recognized as beads events in the gating plots. Note that this is for visualization only, whether you press this button or not has no effect on the normalization process
 - *Apply current gates to all files*: applies the current gates to all the files.
 - *Normalize*: starts the normalization routine. When the process is completed a confirmation dialog will appear
 

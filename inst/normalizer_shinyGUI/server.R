@@ -49,7 +49,7 @@ render_normalizer_ui <- function(working.directory, ...){renderUI({
                 ),
                 p("You have gated beads for the following files (Only these files will be normalized):"),
                 verbatimTextOutput("normalizerui_dialog2"),
-                actionButton("normalizerui_identify_beads", "Identify beads"),
+                actionButton("normalizerui_visualize_beads", "Visualize beads"),
                 actionButton("normalizerui_apply_gates_all_files", "Apply current gates to all files"),
                 actionButton("normalizerui_normalize_files", "Normalize")
             )
@@ -286,7 +286,7 @@ shinyServer(function(input, output, session) {
 
     })
 
-    observeEvent(input$normalizerui_identify_beads, {
+    observeEvent(input$normalizerui_visualize_beads, {
         isolate({
             fcs <- get_fcs()
             m <- get_exprs()

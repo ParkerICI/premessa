@@ -21,9 +21,9 @@ render_paneleditor_ui <- function(working.directory, ...) {renderUI({
 
 
 get_panel_table <- function(files.list) {
-    print("Reading FCS parameters...")
+    message("Reading FCS parameters...")
     panel.table <- premessa:::read_parameters(files.list)
-    print("Done")
+    message("Done")
     common.names <- premessa:::get_common_names(panel.table)
     problem.idx <- premessa:::get_problem_idx(panel.table, common.names)
     panel.table <- panel.table[, order(colSums(problem.idx), decreasing = T), drop = F]
