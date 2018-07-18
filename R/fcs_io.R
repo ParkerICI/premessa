@@ -176,6 +176,10 @@ write_fcs <- function(fcs, out.name) {
     keys <- fcs$keywords
     keys <- keys[grep("\\$P[0-9]+.", names(keys), invert = T)]
 
+    # Exclude keywords that will be written with the new file
+    excl.keywords <- c("FCSversion", "$BEGINANALYSIS", "$BEGINSTEXT", "$BYTEORD", "$DATATYPE", "$ENDANALYSIS",
+        "$ENDSTEXT", "$MODE", "$NEXTDATA", "$TOT", "$PAR", "$BEGINDATA", "$ENDDATA")
+    keys <- keys[!(names(keys) %in% excl.keywords)]
     flow.frame <- flowCore::flowFrame(fcs$m)
     flow.frame <- update_flowFrame_keywords(flow.frame, fcs$m, fcs$desc, data.range = 262144)
     flowCore::keyword(flow.frame) <- keys

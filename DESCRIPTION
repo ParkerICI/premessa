@@ -1,7 +1,7 @@
 Package: premessa
 Type: Package
 Title: R package for pre-processing of flow and mass cytometry data
-Version: 0.2.0
+Version: 0.2.1
 Author: "Pier Federico Gherardini <pfgherardini@parkerici.org> [aut, cre]"
 Description: This package includes panel editing/renaming for FCS files, bead-based normalization and debarcoding.
 Imports: shiny (>= 0.14), flowCore, reshape, ggplot2, hexbin, gridExtra, rhandsontable, jsonlite
