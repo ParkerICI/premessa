@@ -4,9 +4,12 @@
 \alias{debarcoder_GUI}
 \title{Starts the debarcoder GUI}
 \usage{
-debarcoder_GUI(...)
+debarcoder_GUI(launch.browser = TRUE, ...)
 }
 \arguments{
+\item{launch.browser}{Whether to open the GUI in a separate browser window
+(recommended)}
+
 \item{...}{Additional arguments to be passed to \code{shiny::runApp}}
 }
 \description{

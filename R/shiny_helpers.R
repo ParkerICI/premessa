@@ -52,24 +52,38 @@ get_initial_beads_gates <- function(fcs) {
 #' the working directory for the software.
 #' To stop the software simply hit the "ESC" key in your R session.
 #'
+#' @param launch.browser Whether to open the GUI in a separate browser window
+#'   (recommended)
 #' @param ... Additional arguments to be passed to \code{shiny::runApp}
 #' @export
-normalizer_GUI <- function(...) {
-    shiny::runApp(appDir = file.path(system.file(package = "premessa"), "normalizer_shinyGUI"), ...)
+normalizer_GUI <- function(launch.browser = TRUE, ...) {
+    shiny::runApp(appDir = file.path(system.file(package = "premessa"), "normalizer_shinyGUI"),
+                  launch.browser = launch.browser, ...)
 }
 
 #' Starts the debarcoder GUI
 #'
 #' To stop the software simply hit the "ESC" key in your R session.
 #'
-#' @param ... Additional arguments to be passed to \code{shiny::runApp}
+#' @inheritParams normalizer_GUI
 #' @export
-debarcoder_GUI <- function(...) {
-    shiny::runApp(appDir = file.path(system.file(package = "premessa"), "debarcoder_shinyGUI"), ...)
+debarcoder_GUI <- function(launch.browser = TRUE, ...) {
+    shiny::runApp(appDir = file.path(system.file(package = "premessa"), "debarcoder_shinyGUI"),
+                  launch.browser = launch.browser, ...)
 }
 
+#' Starts the panel editor GUI
+#'
+#' Upon starting, a file selection window will appear from your R session. You should use
+#' this window to navigate to the directory containing the data you want to analyze,
+#' and select any file in that directory. The directory itself will then become
+#' the working directory for the software.
+#' To stop the software simply hit the "ESC" key in your R session.
+#'
+#' @inheritParams normalizer_GUI
 #' @export
-paneleditor_GUI <- function(...) {
-    shiny::runApp(appDir = file.path(system.file(package = "premessa"), "paneleditor_shinyGUI"), ...)
+paneleditor_GUI <- function(launch.browser = TRUE, ...) {
+    shiny::runApp(appDir = file.path(system.file(package = "premessa"), "paneleditor_shinyGUI"),
+                  launch.browser = launch.browser, ...)
 }
 

@@ -264,6 +264,12 @@ normalize_folder <- function(wd, output.dir.name, beads.gates, beads.type, basel
         beads.data <- m[beads.events,]
 
         norm.res <- correct_data_channels(m, beads.data, baseline.data, beads.cols.names)
+
+        # Do some cleanup to save memory
+        fcs <- flowCore::read.FCS(file.path(wd, f.name), which.lines = 1) # We only need the keywords
+        m <- NULL
+        gc()
+
         m.normed <- norm.res$m.normed
         m.normed <- cbind(m.normed,
                         beadDist = get_mahalanobis_distance_from_beads(m.normed, beads.events, beads.cols.names))
