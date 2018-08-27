@@ -105,7 +105,7 @@ shinyServer(function(input, output, session) {
                     title = "Normalizer report",
                     "Bead removal started, please wait..."
                 ))
-                remove_beads_from_file(file.path(normed.dir, input$beadremovalui_selected_fcs),
+                premessa::remove_beads_from_file(file.path(normed.dir, input$beadremovalui_selected_fcs),
                                         input$beadremovalui_cutoff, beads.removed.dir)
                 showModal(modalDialog(
                     title = "Normalizer report",
@@ -125,7 +125,7 @@ shinyServer(function(input, output, session) {
                 ))
                 files.list <- lapply(files.list, function(f.name) {
                     fcs <- flowCore::read.FCS(file.path(normed.dir, f.name))
-                    remove_beads_from_file(file.path(normed.dir, f.name), input$beadremovalui_cutoff, beads.removed.dir)
+                    premessa::remove_beads_from_file(file.path(normed.dir, f.name), input$beadremovalui_cutoff, beads.removed.dir)
                     return(f.name)
                 })
                 showModal(modalDialog(
