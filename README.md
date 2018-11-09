@@ -237,6 +237,7 @@ Upon launching the GUI you will have access to the following controls:
   - *Select sample*: select a specific sample for plotting. Sample names are taken from the barcode key
   - *Select x axis*: select the channel to be displayed on the x axis
   - *Select y axis*: select the channel to be displayed on the y axis
+- *Plot data*: hitting this button will display the currently selected *Plot type*. A spinner loading animation will appear in the button while the plot is being generated. Note that the first plot will take much longer as the data needs to be loaded the first time, but will be cached for subsequent plots
 - *Save files*: hitting this button will apply the current settings, performed the debarcoding, and save the resulting output files
 
 
