@@ -33,7 +33,10 @@ render_debarcoder_ui <- function(...){renderUI({
                     selectizeInput("debarcoderui_xaxis", "Select x axis", choices = c(""), multiple = FALSE, width = "100%"),
                     selectizeInput("debarcoderui_yaxis", "Select y axis", choices = c(""), multiple = FALSE, width = "100%")
                 ),
-                actionButton("debarcoderui_plot_data", "Plot data"),
+                actionButton("debarcoderui_plot_data",
+                                tagList(tags$div(id = "debarcoderui_plot_data_text", "Plot data"),
+                                        tags$div(id = "debarcoderui_plot_data_spinner", class = "spinner", style = "visibility: hidden")),
+                                style = "position: relative"),
                 actionButton("debarcoderui_save_files", "Save files")
             ),
             column(8,
@@ -63,16 +66,23 @@ shinyServer(function(input, output, session) {
     })
 
     debarcoderui_get_fcs <- reactive({
+        ret <- NULL
         if(!is.null(debarcoderui.reactive.values$fcs.fname) && debarcoderui.reactive.values$fcs.fname != "")
-            return(flowCore::read.FCS(debarcoderui.reactive.values$fcs.fname))
+            ret <- flowCore::read.FCS(debarcoderui.reactive.values$fcs.fname)
+        return(ret)
     })
 
     debarcoderui_get_exprs <- reactive({
             fcs <- debarcoderui_get_fcs()
+
+            ret <- NULL
             if(!is.null(fcs)) {
                 m <- flowCore::exprs(fcs)
-                return(asinh(m / 10))
+                ret <- asinh(m / 10)
             }
+
+
+            return(ret)
     })
 
     debarcoderui_get_mahalanobis_distance <- reactive({
@@ -112,29 +122,34 @@ shinyServer(function(input, output, session) {
 
     output$debarcoderui_plot1 <- renderPlot({
         if(!is.null(input$debarcoderui_plot_data) && input$debarcoderui_plot_data) {
+            session$sendCustomMessage(type = "plot_loading", "none")
+            ret <- NULL
             isolate({
                 bc.res <- debarcoderui_get_bc_results()
                 if(!is.null(bc.res)) {
                     if(input$debarcoderui_plot_type == "Separation")
-                        return(premessa:::plot_separation_histogram(bc.res))
+                        ret <- premessa:::plot_separation_histogram(bc.res)
                     else if(input$debarcoderui_plot_type == "Event" || input$debarcoderui_plot_type == "Single biaxial"
                             || input$debarcoderui_plot_type == "All barcode biaxials") {
                         mahal.dist <- debarcoderui_get_mahalanobis_distance()
-                        return(premessa:::plot_barcode_yields(bc.res, input$debarcoderui_separation_threshold,
-                                                    input$debarcoderui_mahal_dist_threshold, mahal.dist))
+                        ret <- premessa:::plot_barcode_yields(bc.res, input$debarcoderui_separation_threshold,
+                                                    input$debarcoderui_mahal_dist_threshold, mahal.dist)
                     }
                 }
             })
+            return(ret)
         }
     })
 
     output$debarcoderui_plot2 <- renderPlot({
         if(!is.null(input$debarcoderui_plot_data) && input$debarcoderui_plot_data) {
+            session$sendCustomMessage(type = "plot_loading", "none")
+            ret <- NULL
             isolate({
                 bc.res <- debarcoderui_get_bc_results()
                 if(!is.null(bc.res)) {
                     if(input$debarcoderui_plot_type == "Separation")
-                        return(premessa:::plot_barcode_separation(bc.res, input$debarcoderui_separation_threshold))
+                        ret <- premessa:::plot_barcode_separation(bc.res, input$debarcoderui_separation_threshold)
                     else {
                         m <- debarcoderui_get_exprs()
                         mahal.dist <- debarcoderui_get_mahalanobis_distance()
@@ -144,17 +159,18 @@ shinyServer(function(input, output, session) {
                         m <- m[sel.rows, ]
 
                         if(input$debarcoderui_plot_type == "Event")
-                            return(premessa:::plot_barcode_channels_intensities(m, bc.res$bc.channels, bc.res$m.normed[sel.rows,]))
+                            ret <- premessa:::plot_barcode_channels_intensities(m, bc.res$bc.channels, bc.res$m.normed[sel.rows,])
                         else {
                             if(input$debarcoderui_plot_type == "Single biaxial")
-                                return(premessa:::plot_color_coded_biaxial(m, input$debarcoderui_xaxis,
-                                                input$debarcoderui_yaxis, "mahal.dist"))
+                                ret <- premessa:::plot_color_coded_biaxial(m, input$debarcoderui_xaxis,
+                                                input$debarcoderui_yaxis, "mahal.dist")
                             else if(input$debarcoderui_plot_type == "All barcode biaxials")
-                                return(premessa:::plot_all_barcode_biaxials(m, bc.res$bc.channels))
+                                ret <- premessa:::plot_all_barcode_biaxials(m, bc.res$bc.channels)
                         }
                     }
                 }
             })
+            return(ret)
         }
     })
 
