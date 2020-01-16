@@ -27,7 +27,7 @@ update_flowFrame_keywords <- function(flowFrame, exprs.m, desc = NULL, data.rang
         keyval[[n]] <- colnames(exprs.m)[i]
 
         if(data.range == "data")
-            keyval[[r]] <- ceiling(max(exprs.m[,i]) - min(exprs.m[,i]))
+            keyval[[r]] <- ceiling(max(exprs.m[,i]))
         else if(is.numeric(data.range))
             keyval[[r]] <- data.range
         else

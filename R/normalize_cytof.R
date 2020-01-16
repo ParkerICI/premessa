@@ -146,7 +146,8 @@ get_mahalanobis_distance_from_beads <- function(m, beads.events, beads.cols.name
     beads.data <- m[beads.events,]
 
     cov.m <- cov(beads.data)
-    ret <- sqrt(mahalanobis(m, colMeans(beads.data), cov.m))
+    ret <- sqrt(mahalanobis(m, colMeans(beads.data), cov.m, tol = 1e-30))
+
     return(ret)
 }
 
