@@ -27,7 +27,7 @@ update_flowFrame_keywords <- function(flowFrame, exprs.m, desc = NULL, data.rang
         keyval[[n]] <- colnames(exprs.m)[i]
 
         if(data.range == "data")
-            keyval[[r]] <- ceiling(max(exprs.m[,i]))
+            keyval[[r]] <- ceiling(max(exprs.m[,i], na.rm = TRUE))
         else if(is.numeric(data.range))
             keyval[[r]] <- data.range
         else
@@ -38,8 +38,8 @@ update_flowFrame_keywords <- function(flowFrame, exprs.m, desc = NULL, data.rang
         flowCore::keyword(flowFrame) <- keyval
 
 
-        pdata[i,"minRange"] <- min(exprs.m[,i])
-        pdata[i,"maxRange"] <- max(exprs.m[,i])
+        pdata[i,"minRange"] <- min(exprs.m[,i], na.rm = TRUE)
+        pdata[i,"maxRange"] <- max(exprs.m[,i], na.rm = TRUE)
 
     }
 
