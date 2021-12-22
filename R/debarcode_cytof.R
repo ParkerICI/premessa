@@ -25,6 +25,33 @@ get_barcode_channels_names <- function(m, bc.key) {
 }
 
 
+sort_rows <- function(m) {
+    x <- data.table::as.data.table(m)
+    x$row.id <- 1:nrow(x)
+
+    x <- dcast(melt(setDT(x), id.var='row.id')[order(-value),
+                                          .SD, row.id][, N:=1:.N , .(row.id)],
+          row.id~N, value.var=c("value"))
+    x$row.id <- NULL
+    return(as.matrix(x))
+
+
+
+
+
+
+    #aa <- melt(data.table::setDT(x), id.var='row.id')
+    #bb <- aa[order(-value), .SD, row.id]
+
+    #cc <- bb[, N:=1:.N , .(row.id)]
+    #dd <- dcast(cc, row.id~N, value.var = c("value"))
+
+
+
+
+
+}
+
 
 #' This assumes that all barcodes are identified by the same number of channels
 #' @param m Transformed data matrix
