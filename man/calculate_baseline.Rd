@@ -4,8 +4,12 @@
 \alias{calculate_baseline}
 \title{Calculate baseline for normalization}
 \usage{
-calculate_baseline(wd, beads.type, files.type = c("data", "beads"),
-  beads.gates = NULL)
+calculate_baseline(
+  wd,
+  beads.type,
+  files.type = c("data", "beads"),
+  beads.gates = NULL
+)
 }
 \arguments{
 \item{wd}{Working directory (character)}

@@ -90,6 +90,7 @@ plot_barcode_yields <- function(bc.results, sep.threshold, mahal.threshold = NUL
         + ggplot2::scale_y_continuous("Cell count")
         + ggplot2::scale_x_discrete("Sample")
         + ggplot2::labs(title = title.string)
+        #+ ggplot2::theme(axis.text.y = ggplot2::element_blank())
     )
 
     return(p)

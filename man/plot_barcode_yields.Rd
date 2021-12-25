@@ -4,8 +4,12 @@
 \alias{plot_barcode_yields}
 \title{Plotting sample yields after debarcoding}
 \usage{
-plot_barcode_yields(bc.results, sep.threshold, mahal.threshold = NULL,
-  mahal.dist = NULL)
+plot_barcode_yields(
+  bc.results,
+  sep.threshold,
+  mahal.threshold = NULL,
+  mahal.dist = NULL
+)
 }
 \arguments{
 \item{bc.results}{The debarcoding results returned from \code{debarcode_data}}

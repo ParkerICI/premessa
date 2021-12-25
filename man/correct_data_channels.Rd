@@ -4,8 +4,13 @@
 \alias{correct_data_channels}
 \title{Normalize data}
 \usage{
-correct_data_channels(m, beads.data, baseline, beads.col.names,
-  time.col.name = "Time")
+correct_data_channels(
+  m,
+  beads.data,
+  baseline,
+  beads.col.names,
+  time.col.name = "Time"
+)
 }
 \arguments{
 \item{m}{The data matrix}

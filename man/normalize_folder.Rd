@@ -4,8 +4,7 @@
 \alias{normalize_folder}
 \title{Normalize a folder of FCS files}
 \usage{
-normalize_folder(wd, output.dir.name, beads.gates, beads.type,
-  baseline = NULL)
+normalize_folder(wd, output.dir.name, beads.gates, beads.type, baseline = NULL)
 }
 \arguments{
 \item{wd}{Working directory (character)}

@@ -6,4 +6,6 @@
 #'
 #' @docType package
 #' @name premessa
+#'
+#' @import data.table
 NULL

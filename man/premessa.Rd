@@ -3,7 +3,6 @@
 \docType{package}
 \name{premessa}
 \alias{premessa}
-\alias{premessa-package}
 \title{premessa: A package for normalization and debarcoding of CyTOF data.}
 \description{
 For the normalizer GUI refer to the documentation for the \code{normalizer_GUI} function

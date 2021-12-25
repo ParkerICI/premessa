@@ -4,7 +4,7 @@
 \alias{debarcode_data}
 \title{Debarcodes data by doing normalization after preliminary barcode assignemnts}
 \usage{
-debarcode_data(m, bc.key)
+debarcode_data(m, bc.key, downsample.to = NULL)
 }
 \arguments{
 \item{m}{The data matrix}
