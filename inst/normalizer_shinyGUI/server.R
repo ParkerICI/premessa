@@ -2,7 +2,25 @@ gatePlot <- function (outputId) {
     HTML(paste("<div id=\"", outputId, "\" class=\"shiny-gateplot\"><canvas id=\"gatePlotCanvas\"></canvas></div>", sep=""))
 }
 
+render_concatenate_ui <- function(working.directory, ...) {renderUI({
+    fluidPage(
+        fluidRow(
+            column(12,
+                #selectizeInput("concatenateui_selected_files", multiple = T, width = "100%", choices = c()),
+                shinyjqui::orderInput("concatenateui_available_files", "Available files", connect = "concatenateui_files_order",
+                                      items = list.files(working.directory, pattern = "*.fcs$", ignore.case = TRUE), width = "100%"),
+                shinyjqui::orderInput("concatenateui_files_order", "File order", placeholder = "Drag files here",
+                                      items = NULL, connect = "concatenateui_available_files", width = "100%"),
+                actionButton("concatenateui_concatenate_files", "Concatenate files")
 
+            )
+        )
+    )
+
+
+
+
+})}
 
 
 render_beadremoval_ui <- function(working.directory, ...) {renderUI({
@@ -26,7 +44,6 @@ render_beadremoval_ui <- function(working.directory, ...) {renderUI({
 
 
 render_normalizer_ui <- function(working.directory, ...){renderUI({
-    #Remove this fluidpage?
     fluidPage(
         fluidRow(
             column(12,
@@ -82,10 +99,34 @@ shinyServer(function(input, output, session) {
     beads.removed.dir <- file.path(normed.dir, "beads_removed")
     beadremovalui.plots.number <- 3
 
+    output$concatenateUI <- render_concatenate_ui(working.directory)
     output$normalizerUI <- render_normalizer_ui(working.directory, input, output, session)
     output$normalizerUI_plot_outputs <- generate_normalizerui_plot_outputs(5)
     output$beadremovalUI <- render_beadremoval_ui(working.directory, input, output, session)
     output$beadremovalUI_plot_outputs <- generate_beadremovalui_plot_outputs(beadremovalui.plots.number)
+
+    #concatenateUI functions
+
+    observe({
+        if(!is.null(input$concatenateui_concatenate_files) && input$concatenateui_concatenate_files != 0) {
+            input.files <- file.path(working.directory, input$concatenateui_files_order)
+            out.file <- file.path(working.directory, gsub(".fcs$", "_concat.fcs", input$concatenateui_files_order[[1]], ignore.case = TRUE))
+            showModal(modalDialog(
+                title = "Normalizer report",
+                "File concatenation started, please wait..."
+            ))
+            premessa::concatenate_fcs_files(input.files, out.file)
+            showModal(modalDialog(
+                title = "Normalizer report",
+                p("Files concatenated in this order:", br(),
+                  lapply(input$concatenateui_files_order, function(x) list(x, br())),
+                  br(), "Outuput file: ", basename(out.file)
+                )
+            ))
+            updateSelectizeInput(session, "normalizerui_selected_fcs",
+                                 choices = c("", list.files(working.directory, pattern = "*.fcs$", ignore.case = T)))
+        }
+    })
 
     #beadremovalUI functions
 
