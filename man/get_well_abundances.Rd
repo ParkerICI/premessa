@@ -4,8 +4,12 @@
 \alias{get_well_abundances}
 \title{Calculate number of events assigned to each sample}
 \usage{
-get_well_abundances(bc.results, sep.thresholds, mahal.threshold = NULL,
-  mahal.dist = NULL)
+get_well_abundances(
+  bc.results,
+  sep.thresholds,
+  mahal.threshold = NULL,
+  mahal.dist = NULL
+)
 }
 \arguments{
 \item{bc.results}{The debarcoding results returned from \code{debarcode_data}}

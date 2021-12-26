@@ -4,8 +4,12 @@
 \alias{get_assignments_at_threshold}
 \title{Assign events to a specific sample}
 \usage{
-get_assignments_at_threshold(bc.results, sep.threshold,
-  mahal.threshold = NULL, mahal.dist = NULL)
+get_assignments_at_threshold(
+  bc.results,
+  sep.threshold,
+  mahal.threshold = NULL,
+  mahal.dist = NULL
+)
 }
 \arguments{
 \item{bc.results}{The debarcoding results returned from \code{debarcode_data}}

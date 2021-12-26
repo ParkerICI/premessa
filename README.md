@@ -4,9 +4,11 @@
 
 Copyright 2016. Parker Institute for Cancer Immunotherapy
 
-**Please contact us with bugs/feature requests** 
-
 **---> Make sure to have a backup copy of your data before you use the software! <---**
+
+**New in version 0.3.0**:
+- Added UI for file concatenation under the normalizer GUI
+- Much faster debarcoding. Note that for the purpose of debarcoder plotting, data will now be downsampled to 100000 events. This means that absolute cell numbers in the plots will not reflect the absolute cell numbers in the final data (but the ratios and trends will be correct). The final debarcoded data will always include **all** events
 
 
 # Installation

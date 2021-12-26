@@ -4,8 +4,14 @@
 \alias{debarcode_fcs}
 \title{Main wrapper for the debarcoder pipeline.}
 \usage{
-debarcode_fcs(fcs, bc.key, output.dir, output.basename, sep.threshold,
-  mahal.dist.threshold = 30)
+debarcode_fcs(
+  fcs,
+  bc.key,
+  output.dir,
+  output.basename,
+  sep.threshold,
+  mahal.dist.threshold = 30
+)
 }
 \arguments{
 \item{fcs}{The input \code{flowFrame}}

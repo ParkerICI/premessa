@@ -26,12 +26,12 @@ get_barcode_channels_names <- function(m, bc.key) {
 
 
 sort_rows <- function(m) {
-    x <- data.table::as.data.table(m)
+    x <- as.data.table(m)
     x$row.id <- 1:nrow(x)
 
     x <- dcast(melt(setDT(x), id.var='row.id')[order(-value),
                                           .SD, row.id][, N:=1:.N , .(row.id)],
-          row.id~N, value.var=c("value"))
+          row.id~N, value.var = c("value"))
     x$row.id <- NULL
     return(as.matrix(x))
 
@@ -58,7 +58,8 @@ sort_rows <- function(m) {
 #' @param expected.positive A single number. The expected number of positive barcode channels for each event
 calculate_bcs_separation <- function(m, bc.channels, expected.positive, cutoff) {
     m.bcs <- m[, bc.channels]
-    m.bcs <- t(apply(m.bcs, 1, sort, decreasing = T))
+    #m.bcs <- t(apply(m.bcs, 1, sort, decreasing = T))
+    m.bcs <- sort_rows(m.bcs)
     deltas <- m.bcs[, expected.positive] - m.bcs[, expected.positive + 1]
 
     lowest.bc <- m.bcs[, expected.positive]
@@ -255,7 +256,8 @@ debarcode_data_matrix <- function(m, bc.channels, bc.key) {
 #'
 #' @param m The data matrix
 #' @param bc.key The barcode key, as returned by \code{read_barcode_key}
-#'
+#' @param downsample.to Optional. If provided the data will be downsampled to the
+#'   specified number of events before debarcoding
 #' @return Returns a list with the following components
 #'  \itemize{
 #'      \item{\code{m.normed}}{ matrix with \code{nrow(m)} rows. The normalized barcode intensities}
@@ -266,7 +268,11 @@ debarcode_data_matrix <- function(m, bc.channels, bc.key) {
 #'  }
 #'
 #' @export
-debarcode_data <- function(m, bc.key) {
+debarcode_data <- function(m, bc.key, downsample.to = NULL) {
+    if(!is.null(downsample.to) && nrow(m) > downsample.to) {
+        message(sprintf("Downsampling data to %d", downsample.to))
+        m <- m[sample(1:nrow(m), downsample.to), ]
+    }
     barcode.channels <- get_barcode_channels_names(m, bc.key)
 
 

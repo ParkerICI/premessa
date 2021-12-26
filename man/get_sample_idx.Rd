@@ -4,8 +4,13 @@
 \alias{get_sample_idx}
 \title{Returns the indices of the events corresponding to a given sample label}
 \usage{
-get_sample_idx(label, bc.results, sep.threshold, mahal.threshold = NULL,
-  mahal.dist = NULL)
+get_sample_idx(
+  label,
+  bc.results,
+  sep.threshold,
+  mahal.threshold = NULL,
+  mahal.dist = NULL
+)
 }
 \arguments{
 \item{label}{Character string. The desired sample label}

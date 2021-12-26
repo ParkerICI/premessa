@@ -78,6 +78,11 @@ shinyServer(function(input, output, session) {
             ret <- NULL
             if(!is.null(fcs)) {
                 m <- flowCore::exprs(fcs)
+                downsample.to <- 100000
+                if(nrow(m) > downsample.to) {
+                    message(sprintf("Downsampling data to %d", downsample.to))
+                    m <- m[sample(1:nrow(m), downsample.to), ]
+                }
                 ret <- asinh(m / 10)
             }
 
