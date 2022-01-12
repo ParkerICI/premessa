@@ -8,6 +8,9 @@ render_paneleditor_ui <- function(working.directory, ...) {renderUI({
                 textInput("paneleditorui_output_folder", label = "Output folder name", value = "renamed")
             ),
             column(3,
+                actionButton("paneleditorui_load_template", "Load template")
+            ),
+            column(3,
                 actionButton("paneleditorui_process_files", "Process files")
             )
         ),
@@ -33,7 +36,19 @@ get_panel_table <- function(files.list) {
     return(panel.table)
 }
 
-
+rename_from_template <- function(tab, template.file.path) {
+    template <- read.csv(template.file.path, header = FALSE)
+    if(ncol(template) < 2)
+        stop("Template file format incorrect")
+    names.map <- setNames(template[, 2], template[, 1])
+    names.map <- names.map[names(names.map) %in% row.names(tab)]
+    fcs.cols <- grep("FCS$", names(tab), ignore.case = TRUE)
+    w.na <- is.na(tab[names(names.map), fcs.cols])
+    tab[names(names.map), fcs.cols] <- names.map
+    tab[names(names.map), fcs.cols][w.na] <- NA
+    tab[, "Most common"] <- premessa:::get_common_names(tab)
+    return(tab)
+}
 
 shinyServer(function(input, output, session) {
     working.directory <- dirname(file.choose())
@@ -79,6 +94,18 @@ shinyServer(function(input, output, session) {
 
     output$paneleditorui_panel_table <- rhandsontable::renderRHandsontable({
         temp <- panel.table
+
+        if(!is.null(input$paneleditorui_load_template) && input$paneleditorui_load_template != 0) {
+            temp <- tryCatch(rename_from_template(temp, file.choose()),
+                             error = function(cond) {
+                                 showModal(modalDialog(
+                                     title = "Panel editor error",
+                                     "Template file format incorrect. Should be a CSV with two columns:", br(),
+                                     "CHANNEL-NAME,PARAMETER-NAME"
+                                 ))
+                                 temp
+                             })
+        }
 
         for(i in 1:ncol(temp))
             temp[, i][is.na(temp[, i])] <- "absent"
