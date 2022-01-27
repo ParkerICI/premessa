@@ -107,7 +107,7 @@ shinyServer(function(input, output, session) {
 
     output$concatenateUI <- render_concatenate_ui(working.directory)
     output$normalizerUI <- render_normalizer_ui(working.directory, input, output, session)
-    output$normalizerUI_plot_outputs <- generate_normalizerui_plot_outputs(5)
+    output$normalizerUI_plot_outputs <- generate_normalizerui_plot_outputs(6)
     output$beadremovalUI <- render_beadremoval_ui(working.directory, input, output, session)
     output$beadremovalUI_plot_outputs <- generate_beadremovalui_plot_outputs(beadremovalui.plots.number)
 
