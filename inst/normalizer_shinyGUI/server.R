@@ -28,7 +28,10 @@ render_beadremoval_ui <- function(working.directory, ...) {renderUI({
         fluidRow(
             column(12,
                    selectizeInput("beadremovalui_beads_type", "Select beads type", multiple = FALSE, width = "100%",
-                                  choices = c("Fluidigm Beads (140,151,153,165,175)", "Beta Beads (139,141,159,169,175)")),
+                                   choices = c("Fluidigm Beads EQ4 (140,151,153,165,175)",
+                                               "Fluidigm Beads EQ6 (89, 115, 140, 159, 175, 209)",
+                                               "Beta Beads (139,141,159,169,175)")
+                               ),
                    selectizeInput("beadremovalui_selected_fcs", "Select FCS file",
                                   choices = c("", list.files(file.path(working.directory, "normed"), pattern = "*.fcs$", ignore.case = T)), multiple = FALSE, width = "100%"),
                    numericInput("beadremovalui_cutoff", "Cutoff for bead removal", value = 0, min = 0, max = 20),
@@ -48,7 +51,10 @@ render_normalizer_ui <- function(working.directory, ...){renderUI({
         fluidRow(
             column(12,
                 selectizeInput("normalizerui_beads_type", "Select beads type", multiple = FALSE, width = "100%",
-                               choices = c("Fluidigm Beads (140,151,153,165,175)", "Beta Beads (139,141,159,169,175)")),
+                               choices = c("Fluidigm_EQ4 beads (140,151,153,165,175)",
+                                           "Fluidigm_EQ6 beads (89,115,140,159,175,209)",
+                                           "Beta Beads (139,141,159,169,175)")
+                               ),
                 selectizeInput("normalizerui_selected_fcs", "Select FCS file",
                             choices = c("", list.files(working.directory, pattern = "*.fcs$", ignore.case = T)), multiple = FALSE, width = "100%"),
                 fluidRow(
