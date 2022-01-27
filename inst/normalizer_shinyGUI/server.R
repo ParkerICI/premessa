@@ -29,7 +29,7 @@ render_beadremoval_ui <- function(working.directory, ...) {renderUI({
             column(12,
                    selectizeInput("beadremovalui_beads_type", "Select beads type", multiple = FALSE, width = "100%",
                                    choices = c("Fluidigm Beads EQ4 (140,151,153,165,175)",
-                                               "Fluidigm Beads EQ6 (89, 115, 140, 159, 175, 209)",
+                                               "Fluidigm Beads EQ6 (89,115,140,159,175,209)",
                                                "Beta Beads (139,141,159,169,175)")
                                ),
                    selectizeInput("beadremovalui_selected_fcs", "Select FCS file",
