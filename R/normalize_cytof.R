@@ -247,7 +247,7 @@ normalize_folder <- function(wd, output.dir.name, beads.gates, beads.type, basel
     out.dir.path <- file.path(wd, output.dir.name)
     beads.dir.path <- file.path(out.dir.path, "beads")
     beads.vs.time.path <- file.path(out.dir.path, "beads_vs_time")
-    #This will also create the upstram out.dir.path
+    #This will also create the upstream out.dir.path
     dir.create(beads.dir.path, recursive = T)
     dir.create(beads.vs.time.path, recursive = T)
 
@@ -283,12 +283,15 @@ normalize_folder <- function(wd, output.dir.name, beads.gates, beads.type, basel
 
         beads.normed <- apply(norm.res$beads.normed[, beads.cols], 2, median)
         beads.smoothed <- apply(norm.res$beads.smoothed[, beads.cols], 2, median)
+        beads.slopes <- median(norm.res$beads.slopes[, 2])
 
         p <- plot_beads_over_time(norm.res$beads.smoothed, smooth_beads(norm.res$beads.normed), beads.cols)
 
         ggplot2::ggsave(file.path(beads.vs.time.path, gsub(".fcs$", ".pdf", f.name, ignore.case = T)), plot = p, width = 11, height = 8.5, units = "in")
-        return(list(beads.normed = beads.normed, beads.smoothed = beads.smoothed))
+        return(list(beads.normed = beads.normed, beads.smoothed = beads.smoothed, beads.slopes = beads.slopes))
     })
+
+    beads.slopes <- data.frame(slope = sapply(ll, "[[", "beads.slopes"), sample = names(beads.gates))
 
     beads.medians <- t(sapply(ll, function(x) {return(x[["beads.normed"]])}))
     beads.medians <- rbind(beads.medians,
@@ -299,7 +302,12 @@ normalize_folder <- function(wd, output.dir.name, beads.gates, beads.type, basel
     beads.medians$sample <- rep(names(beads.gates), 2)
     beads.medians$type <- c(rep("After", length(ll)), rep("Before", length(ll)))
     beads.medians$type <- factor(beads.medians$type, levels = c("Before", "After"))
+
+    write.table(beads.slopes, file.path(out.dir.path, "beads_slopes.tsv"), row.names = FALSE, col.names = TRUE, sep = "\t", quote = F)
+    write.table(beads.medians, file.path(out.dir.path, "beads_medians.tsv"), row.names = FALSE, col.names = TRUE, sep = "\t", quote = F)
+
     p <- plot_beads_medians(beads.medians)
     ggplot2::ggsave(file.path(out.dir.path, "beads_before_and_after.pdf"), plot = p, width = 11, height = 8.5, units = "in")
 
 }
+
