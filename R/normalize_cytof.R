@@ -106,7 +106,7 @@ calculate_baseline <- function(wd, beads.type, files.type = c("data", "beads"), 
     )
 
     ret <- lapply(files.list, function(f.name) {
-        fcs <- flowCore::read.FCS(file.path(wd, f.name))
+        fcs <- flowCore::read.FCS(file.path(wd, f.name), emptyValue = FALSE)
         beads.cols.names <- find_beads_channels_names(fcs, beads.type)
         dna.col <- find_dna_channel(fcs)
 
@@ -193,7 +193,7 @@ remove_beads_from_fcs <- function(fcs, dist.threshold) {
 #'
 #' @export
 remove_beads_from_file <- function(input.fname, dist.threshold, out.dir) {
-    fcs <- flowCore::read.FCS(input.fname)
+    fcs <- flowCore::read.FCS(input.fname, emptyValue = FALSE)
     beads.dir <- file.path(out.dir, "removed_events")
     dir.create(beads.dir, recursive = T)
     base.fname <- tools::file_path_sans_ext(basename(input.fname))
@@ -255,7 +255,7 @@ normalize_folder <- function(wd, output.dir.name, beads.gates, beads.type, basel
     cat(jsonlite::toJSON(beads.gates, pretty = T), file = file.path(out.dir.path, "beads_gates.json"))
 
     ll <- lapply(names(beads.gates), function(f.name) {
-        fcs <- flowCore::read.FCS(file.path(wd, f.name))
+        fcs <- flowCore::read.FCS(file.path(wd, f.name), emptyValue = FALSE)
         beads.cols <- find_bead_channels(fcs, beads.type)
         beads.cols.names <- get_parameter_name(fcs, beads.cols)
         dna.col <- find_dna_channel(fcs)
@@ -267,7 +267,7 @@ normalize_folder <- function(wd, output.dir.name, beads.gates, beads.type, basel
         norm.res <- correct_data_channels(m, beads.data, baseline.data, beads.cols.names)
 
         # Do some cleanup to save memory
-        fcs <- flowCore::read.FCS(file.path(wd, f.name), which.lines = 1) # We only need the keywords
+        fcs <- flowCore::read.FCS(file.path(wd, f.name), emptyValue = FALSE, which.lines = 1) # We only need the keywords
         m <- NULL
         gc()
 

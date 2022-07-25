@@ -16,7 +16,7 @@
 #' @export
 read_parameters <- function(files.list) {
     ret <- lapply(files.list, function(f) {
-        fcs <- flowCore::read.FCS(f, which.lines = 1)
+        fcs <- flowCore::read.FCS(f, emptyValue = FALSE, which.lines = 1)
         df <- data.frame(name = as.character(flowCore::parameters(fcs)$name),
             desc = as.character(flowCore::parameters(fcs)$desc), check.names = F,
             stringsAsFactors = F)
