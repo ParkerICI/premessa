@@ -230,7 +230,7 @@ remove_beads_from_file <- function(input.fname, dist.threshold, out.dir) {
 #'  \code{list(file_name = list(channel_name = list(x = [xMin, xMax], y = [yMin, yMax]), ...), ...)}.
 #'  Note that only files in \code{names(beads.gates)} will be processed. Also note that the data structure
 #'  may contain gates for extra channels, but which channels will be used depends on the \code{beads.type} parameter
-#' @param beads.type Type of beads. Must be on of \code{"Fluidigm"}, \code{"Beta"}
+#' @param beads.type Type of beads. Must be one of \code{"Fluidigm"}, \code{"Beta"}, \code{"XT"}
 #' @param baseline If \code{NULL} the median beads intensities of the current files will be used as baseline
 #'  for normalization. Alternatively this can be a character string with the path of a directory containing
 #'  FCS files of beads events, whose median intensities will be used as baseline.
