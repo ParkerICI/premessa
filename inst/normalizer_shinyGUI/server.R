@@ -28,7 +28,7 @@ render_beadremoval_ui <- function(working.directory, ...) {renderUI({
         fluidRow(
             column(12,
                    selectizeInput("beadremovalui_beads_type", "Select beads type", multiple = FALSE, width = "100%",
-                                  choices = c("Fluidigm Beads (140,151,153,165,175)", "Beta Beads (139,141,159,169,175)")),
+                                  choices = c("Fluidigm Beads (140,151,153,165,175)", "Beta Beads (139,141,159,169,175)","XT Beads (89,115,140,159,175,209)")),
                    selectizeInput("beadremovalui_selected_fcs", "Select FCS file",
                                   choices = c("", list.files(file.path(working.directory, "normed"), pattern = "*.fcs$", ignore.case = T)), multiple = FALSE, width = "100%"),
                    numericInput("beadremovalui_cutoff", "Cutoff for bead removal", value = 0, min = 0, max = 20),
@@ -48,7 +48,7 @@ render_normalizer_ui <- function(working.directory, ...){renderUI({
         fluidRow(
             column(12,
                 selectizeInput("normalizerui_beads_type", "Select beads type", multiple = FALSE, width = "100%",
-                               choices = c("Fluidigm Beads (140,151,153,165,175)", "Beta Beads (139,141,159,169,175)")),
+                               choices = c("Fluidigm Beads (140,151,153,165,175)", "Beta Beads (139,141,159,169,175)","XT Beads (89,115,140,159,175,209)")),
                 selectizeInput("normalizerui_selected_fcs", "Select FCS file",
                             choices = c("", list.files(working.directory, pattern = "*.fcs$", ignore.case = T)), multiple = FALSE, width = "100%"),
                 fluidRow(
@@ -101,7 +101,7 @@ shinyServer(function(input, output, session) {
 
     output$concatenateUI <- render_concatenate_ui(working.directory)
     output$normalizerUI <- render_normalizer_ui(working.directory, input, output, session)
-    output$normalizerUI_plot_outputs <- generate_normalizerui_plot_outputs(5)
+
     output$beadremovalUI <- render_beadremoval_ui(working.directory, input, output, session)
     output$beadremovalUI_plot_outputs <- generate_beadremovalui_plot_outputs(beadremovalui.plots.number)
 
@@ -134,7 +134,7 @@ shinyServer(function(input, output, session) {
         ret <- NULL
 
         if(!is.null(input$beadremovalui_selected_fcs) && input$beadremovalui_selected_fcs != "")
-            ret <- flowCore::read.FCS(file.path(normed.dir, input$beadremovalui_selected_fcs))
+            ret <- flowCore::read.FCS(file.path(normed.dir, input$beadremovalui_selected_fcs), emptyValue = FALSE)
 
         return(ret)
     })
@@ -165,7 +165,7 @@ shinyServer(function(input, output, session) {
                     "Bead removal started, please wait..."
                 ))
                 files.list <- lapply(files.list, function(f.name) {
-                    fcs <- flowCore::read.FCS(file.path(normed.dir, f.name))
+                    fcs <- flowCore::read.FCS(file.path(normed.dir, f.name), emptyValue = FALSE)
                     premessa::remove_beads_from_file(file.path(normed.dir, f.name), input$beadremovalui_cutoff, beads.removed.dir)
                     return(f.name)
                 })
@@ -181,7 +181,7 @@ shinyServer(function(input, output, session) {
 
     observe({
         if(!is.null(input$beadremovalui_selected_fcs) && input$beadremovalui_selected_fcs != "") {
-            fcs <- flowCore::read.FCS(file.path(normed.dir, input$beadremovalui_selected_fcs))
+            fcs <- flowCore::read.FCS(file.path(normed.dir, input$beadremovalui_selected_fcs), emptyValue = FALSE)
             beads.type <-  premessa:::get_beads_type_from_description(input$beadremovalui_beads_type)
 
             beads.cols.names <- premessa:::find_beads_channels_names(fcs, beads.type)
@@ -240,7 +240,7 @@ shinyServer(function(input, output, session) {
         ret <- NULL
 
         if(!is.null(input$normalizerui_selected_fcs) && input$normalizerui_selected_fcs != "")
-            ret <- flowCore::read.FCS(file.path(working.directory, input$normalizerui_selected_fcs))
+            ret <- flowCore::read.FCS(file.path(working.directory, input$normalizerui_selected_fcs), emptyValue = FALSE)
 
         return(ret)
     })
@@ -274,6 +274,8 @@ shinyServer(function(input, output, session) {
         colors <- rep("black", nrow(m))
         if(!is.null(sel.beads))
             colors[sel.beads] <- "red"
+
+        output$normalizerUI_plot_outputs <- generate_normalizerui_plot_outputs(length(beads.cols))
 
         #Needs to be in lapply to work
         #see https://github.com/rstudio/shiny/issues/532

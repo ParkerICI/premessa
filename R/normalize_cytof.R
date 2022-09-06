@@ -106,7 +106,7 @@ calculate_baseline <- function(wd, beads.type, files.type = c("data", "beads"), 
     )
 
     ret <- lapply(files.list, function(f.name) {
-        fcs <- flowCore::read.FCS(file.path(wd, f.name))
+        fcs <- flowCore::read.FCS(file.path(wd, f.name), emptyValue = FALSE)
         beads.cols.names <- find_beads_channels_names(fcs, beads.type)
         dna.col <- find_dna_channel(fcs)
 
@@ -193,7 +193,7 @@ remove_beads_from_fcs <- function(fcs, dist.threshold) {
 #'
 #' @export
 remove_beads_from_file <- function(input.fname, dist.threshold, out.dir) {
-    fcs <- flowCore::read.FCS(input.fname)
+    fcs <- flowCore::read.FCS(input.fname, emptyValue = FALSE)
     beads.dir <- file.path(out.dir, "removed_events")
     dir.create(beads.dir, recursive = T)
     base.fname <- tools::file_path_sans_ext(basename(input.fname))
@@ -230,7 +230,7 @@ remove_beads_from_file <- function(input.fname, dist.threshold, out.dir) {
 #'  \code{list(file_name = list(channel_name = list(x = [xMin, xMax], y = [yMin, yMax]), ...), ...)}.
 #'  Note that only files in \code{names(beads.gates)} will be processed. Also note that the data structure
 #'  may contain gates for extra channels, but which channels will be used depends on the \code{beads.type} parameter
-#' @param beads.type Type of beads. Must be on of \code{"Fluidigm"}, \code{"Beta"}
+#' @param beads.type Type of beads. Must be one of \code{"Fluidigm"}, \code{"Beta"}, \code{"XT"}
 #' @param baseline If \code{NULL} the median beads intensities of the current files will be used as baseline
 #'  for normalization. Alternatively this can be a character string with the path of a directory containing
 #'  FCS files of beads events, whose median intensities will be used as baseline.
@@ -255,7 +255,7 @@ normalize_folder <- function(wd, output.dir.name, beads.gates, beads.type, basel
     cat(jsonlite::toJSON(beads.gates, pretty = T), file = file.path(out.dir.path, "beads_gates.json"))
 
     ll <- lapply(names(beads.gates), function(f.name) {
-        fcs <- flowCore::read.FCS(file.path(wd, f.name))
+        fcs <- flowCore::read.FCS(file.path(wd, f.name), emptyValue = FALSE)
         beads.cols <- find_bead_channels(fcs, beads.type)
         beads.cols.names <- get_parameter_name(fcs, beads.cols)
         dna.col <- find_dna_channel(fcs)
@@ -267,7 +267,7 @@ normalize_folder <- function(wd, output.dir.name, beads.gates, beads.type, basel
         norm.res <- correct_data_channels(m, beads.data, baseline.data, beads.cols.names)
 
         # Do some cleanup to save memory
-        fcs <- flowCore::read.FCS(file.path(wd, f.name), which.lines = 1) # We only need the keywords
+        fcs <- flowCore::read.FCS(file.path(wd, f.name), emptyValue = FALSE, which.lines = 1) # We only need the keywords
         m <- NULL
         gc()
 
